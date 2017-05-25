@@ -1,0 +1,3 @@
+int main(int that, int *this){
+	if (that) this := 4;
+}

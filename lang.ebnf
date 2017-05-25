@@ -1,0 +1,91 @@
+@@grammar::Wew
+
+start = {function_decl}+ ;
+
+types = 'int' ;
+
+declare_types
+  =
+  | {@+:'*'}+ types  # pointer
+  | types '[' integer ']'  # list declaration
+  ;
+
+instance_types = types {'*'} ;
+
+typed_variable = instance_types var_name ;
+
+declaration = declare_types var_name ;
+
+function_decl = instance_types var_name '(' @+:typed_variable {',' @+:typed_variable} ')' scope ;
+
+statement
+  =
+  | if_statement
+  | loop_statement
+  | scope
+  | assignment
+  | function_call_stmt
+  | return_stmt
+  ;
+
+return_stmt = 'return' expression ';' ;
+
+if_statement
+  =
+  | 'if' '(' expression ')' statement
+  | 'if' '(' expression ')' statement 'else' statement
+  ;
+
+loop_statement
+  =
+  | 'while' '(' expression ')' statement
+  | 'do' statement 'while' '(' expression ')' ';'
+  ;
+
+scope = '{' {statement} '}' ;
+
+assignment = {'*'} var_name ':=' expression ';' ;
+
+function_call = var_name '(' @+:expression {',' @+:expression} ')' ;
+function_call_stmt = function_call ';' ;
+
+expression
+  =
+  | literal
+  | var_name
+  | function_call
+  | comparison_stmt
+  | postfix_expression
+  | prefix_expression
+  | '(' expression ')'
+  ;
+
+comparisons = '==' | '!=' | '>' | '<' | '<=' | '>=' ;
+
+comparison_stmt = expression comparisons expression ;
+
+prefix_expression
+  =
+  | decrement:('--' expression)
+  | increment:('++' expression)
+  ;
+
+postfix_expression
+  =
+  | list_index:(expression '[' expression ']')
+  | increment:(expression '++')
+  | decrement:(expression '--')
+  ;
+
+integer = /\d+/ ;
+string = /".+"/ ;
+
+literal
+  =
+  | integer
+  | string
+  ;
+
+var_name = /\w+/ ;
+
+# TODO: add math operators, finish
