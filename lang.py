@@ -43,7 +43,7 @@ return_types = types | pointer
 
 var_type = return_types + pp_c.identifier
 
-declaration = declare_types + pp_c.identifier + semicol
+declaration = declare_types + pp_c.identifier
 
 scope = pp.Forward()
 statement = pp.Forward()
@@ -61,9 +61,21 @@ else_stmt = (elif_stmt ^ if_stmt) + pp.Keyword("else") + expression + scope
 
 while_stmt = pp.Keyword("while") + pwrapped(expression) + scope
 
-assignment_stmt = pp_c.identifier + equals + expression + semicol
+assignment_stmt = pp_c.identifier + equals + expression
 
-function_call_stmt = pp_c.identifier + pwrapped(pp.delimitedList(expression))
+# expressions
+function_call_expr = pp_c.identifier + pwrapped(pp.delimitedList(expression))
+comparison_expr = expression + comparison + expression
+math_expr = expression + pp.oneOf("+ - * /") + expression
+dereference_expr = pp.OneOrMore("*") + expression
+
+expression <<= number ^ pp_c.identifier ^ comparison_expr ^ function_call_expr ^ math_expr ^ dereference_expr ^ expression
+
+line_stmts = (declaration ^ assignment_stmt ^ function_call_expr) + semicol
+
+statement <<= line_stmts ^ if_stmt ^ elif_stmt ^ else_stmt ^ while_stmt ^ assignment_stmt
+
+
 
 
 # TODO: build math, combine expressions (function call, math, variable, literals)
