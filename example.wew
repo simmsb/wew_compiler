@@ -1,3 +1,9 @@
-int main(int that, int *this){
-	if (that) this := 4;
+int main(int that, int * this) {
+  if (1 < 2) {
+    print(that);
+    return *wew;
+    do {
+      print();
+    } while (a > b);
+  }
 }

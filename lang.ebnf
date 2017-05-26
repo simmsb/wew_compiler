@@ -1,31 +1,39 @@
 @@grammar::Wew
 
-start = {function_decl}+ ;
+start = {function_decl}+ $ ;
 
 types = 'int' ;
 
+pointer = {@+:'*'}+ ;
+
 declare_types
   =
-  | {@+:'*'}+ types  # pointer
-  | types '[' integer ']'  # list declaration
+  | typ:types pc:pointer 
+  | typ:types '[' len:integer ']'  # list declaration
+  | typ:types
   ;
 
-instance_types = types {'*'} ;
+instance_types
+  =
+  | types pointer
+  | types
+  ;
 
 typed_variable = instance_types var_name ;
 
-declaration = declare_types var_name ;
+declaration = declare_types var_name ';' ;
 
-function_decl = instance_types var_name '(' @+:typed_variable {',' @+:typed_variable} ')' scope ;
+function_decl = typ:instance_types name:var_name '(' ~  params:','.{typed_variable}+  ')' exp:scope ;
 
 statement
   =
   | if_statement
   | loop_statement
-  | scope
   | assignment
   | function_call_stmt
   | return_stmt
+  | declaration
+  | scope
   ;
 
 return_stmt = 'return' expression ';' ;
@@ -33,30 +41,30 @@ return_stmt = 'return' expression ';' ;
 if_statement
   =
   | 'if' '(' expression ')' statement
-  | 'if' '(' expression ')' statement 'else' statement
+  | 'if' '(' expression ')' statement 'else' ~ statement
   ;
 
 loop_statement
   =
-  | 'while' '(' expression ')' statement
-  | 'do' statement 'while' '(' expression ')' ';'
+  | 'while' ~ '(' expression ')' statement
+  | 'do' ~ statement 'while' '(' expression ')' ';'
   ;
 
-scope = '{' {statement} '}' ;
+scope = '{' {statement}+ '}' ;
 
 assignment = {'*'} var_name ':=' expression ';' ;
 
-function_call = var_name '(' @+:expression {',' @+:expression} ')' ;
+function_call = var_name '(' ~ ','.{expression} ')' ;
 function_call_stmt = function_call ';' ;
 
 expression
   =
-  | literal
-  | var_name
   | function_call
   | comparison_stmt
   | postfix_expression
   | prefix_expression
+  | var_name
+  | literal
   | '(' expression ')'
   ;
 
@@ -66,15 +74,16 @@ comparison_stmt = expression comparisons expression ;
 
 prefix_expression
   =
-  | decrement:('--' expression)
-  | increment:('++' expression)
+  | '*' ~ expression
+  | '--' ~ expression
+  | '++' ~ expression
   ;
 
 postfix_expression
   =
-  | list_index:(expression '[' expression ']')
-  | increment:(expression '++')
-  | decrement:(expression '--')
+  | expression '[' ~ expression ']'
+  | expression '++'
+  | expression '--'
   ;
 
 integer = /\d+/ ;
