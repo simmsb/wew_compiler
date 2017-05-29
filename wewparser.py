@@ -11,18 +11,18 @@
 # the file is generated.
 
 
-from __future__ import print_function, division, absolute_import, unicode_literals
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
 
 from tatsu.buffering import Buffer
-from tatsu.parsing import Parser
-from tatsu.parsing import tatsumasu
-from tatsu.util import re, generic_main  # noqa
-
+from tatsu.parsing import Parser, tatsumasu
+from tatsu.util import generic_main, re  # noqa
 
 KEYWORDS = {}
 
 
 class WewBuffer(Buffer):
+
     def __init__(
         self,
         text,
@@ -47,6 +47,7 @@ class WewBuffer(Buffer):
 
 
 class WewParser(Parser):
+
     def __init__(
         self,
         whitespace=None,
@@ -372,6 +373,7 @@ class WewParser(Parser):
 
 
 class WewSemantics(object):
+
     def start(self, ast):  # noqa
         return ast
 
@@ -379,22 +381,18 @@ class WewSemantics(object):
         return ast
 
     def pointer(self, ast):  # noqa
-        print(f"Pointer: {ast}")
         return ast
 
     def declare_types(self, ast):  # noqa
-        print(f"Decl_types: {ast}")
         return ast
 
     def instance_types(self, ast):  # noqa
         return ast
 
     def typed_variable(self, ast):  # noqa
-        print(f"Typed_variable: {ast}")
         return ast
 
     def declaration(self, ast):  # noqa
-        print(f"Declaration: {ast}")
         return ast
 
     def function_decl(self, ast):  # noqa
@@ -407,7 +405,6 @@ class WewSemantics(object):
         return ast
 
     def if_statement(self, ast):  # noqa
-        print(f"If: {ast}")
         return ast
 
     def loop_statement(self, ast):  # noqa
@@ -437,7 +434,7 @@ class WewSemantics(object):
     def prefix_expression(self, ast):  # noqa
         return ast
 
-    def postfix_expression(self, ast):  # noqa
+    def postfix_expression(self, ast):  # noqa:
         return ast
 
     def integer(self, ast):  # noqa
@@ -456,7 +453,7 @@ class WewSemantics(object):
 def main(filename, startrule, **kwargs):
     with open(filename) as f:
         text = f.read()
-    parser = WewParser(semantics=WewSemantics())
+    parser = WewParser()
     return parser.parse(text, startrule, filename=filename, **kwargs)
 
 

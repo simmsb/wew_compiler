@@ -8,7 +8,7 @@ pointer = {@+:'*'}+ ;
 
 declare_types
   =
-  | typ:types pc:pointer 
+  | typ:types pc:pointer
   | typ:types '[' len:integer ']'  # list declaration
   | typ:types
   ;
