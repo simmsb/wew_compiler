@@ -4,7 +4,7 @@ from wewparser import WewSemantics
 
 
 class ObjectConstructor(WewSemantics):
-    """Class used to generate program objects from ast, as a means of preprocessing."""
+    """Class used to generate program objects from ast, as a means of preprocessing."""
 
     def _default(self, ast):
         print(f"DEFAULT: {ast}")
@@ -37,8 +37,7 @@ class ObjectConstructor(WewSemantics):
         return ast
 
     def function_decl(self, ast):  # noqa
-        print(f"Fun decl: {ast}")
-        return ast
+        return objects.FunctionDecl(ast)
 
     def statement(self, ast):  # noqa
         print(f"Statement: {ast}")
