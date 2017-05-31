@@ -11,18 +11,18 @@
 # the file is generated.
 
 
-from __future__ import (absolute_import, division, print_function,
-                        unicode_literals)
+from __future__ import print_function, division, absolute_import, unicode_literals
 
 from tatsu.buffering import Buffer
-from tatsu.parsing import Parser, tatsumasu
-from tatsu.util import generic_main, re  # noqa
+from tatsu.parsing import Parser
+from tatsu.parsing import tatsumasu
+from tatsu.util import re, generic_main  # noqa
+
 
 KEYWORDS = {}
 
 
 class WewBuffer(Buffer):
-
     def __init__(
         self,
         text,
@@ -47,7 +47,6 @@ class WewBuffer(Buffer):
 
 
 class WewParser(Parser):
-
     def __init__(
         self,
         whitespace=None,
@@ -135,13 +134,25 @@ class WewParser(Parser):
     @tatsumasu()
     def _typed_variable_(self):  # noqa
         self._instance_types_()
+        self.name_last_node('type')
         self._var_name_()
+        self.name_last_node('name')
+        self.ast._define(
+            ['name', 'type'],
+            []
+        )
 
     @tatsumasu()
     def _declaration_(self):  # noqa
         self._declare_types_()
+        self.name_last_node('typ')
         self._var_name_()
+        self.name_last_node('name')
         self._token(';')
+        self.ast._define(
+            ['name', 'typ'],
+            []
+        )
 
     @tatsumasu()
     def _function_decl_(self):  # noqa
@@ -190,7 +201,12 @@ class WewParser(Parser):
     def _return_stmt_(self):  # noqa
         self._token('return')
         self._expression_()
+        self.name_last_node('expr')
         self._token(';')
+        self.ast._define(
+            ['expr'],
+            []
+        )
 
     @tatsumasu()
     def _if_statement_(self):  # noqa
@@ -199,39 +215,60 @@ class WewParser(Parser):
                 self._token('if')
                 self._token('(')
                 self._expression_()
+                self.name_last_node('expr')
                 self._token(')')
                 self._statement_()
+                self.name_last_node('stat')
+                self._void()
+                self.name_last_node('el')
             with self._option():
                 self._token('if')
                 self._token('(')
                 self._expression_()
+                self.name_last_node('expr')
                 self._token(')')
                 self._statement_()
+                self.name_last_node('stat')
                 self._token('else')
                 self._cut()
                 self._statement_()
+                self.name_last_node('el')
             self._error('no available options')
+        self.ast._define(
+            ['el', 'expr', 'stat'],
+            []
+        )
 
     @tatsumasu()
     def _loop_statement_(self):  # noqa
         with self._choice():
             with self._option():
                 self._token('while')
+                self.name_last_node('type')
                 self._cut()
                 self._token('(')
                 self._expression_()
+                self.name_last_node('expr')
                 self._token(')')
                 self._statement_()
+                self.name_last_node('stat')
             with self._option():
                 self._token('do')
+                self.name_last_node('type')
                 self._cut()
                 self._statement_()
+                self.name_last_node('stat')
                 self._token('while')
                 self._token('(')
                 self._expression_()
+                self.name_last_node('expr')
                 self._token(')')
                 self._token(';')
             self._error('no available options')
+        self.ast._define(
+            ['expr', 'stat', 'type'],
+            []
+        )
 
     @tatsumasu()
     def _scope_(self):  # noqa
@@ -244,28 +281,36 @@ class WewParser(Parser):
 
     @tatsumasu()
     def _assignment_(self):  # noqa
-
-        def block0():
-            self._token('*')
-        self._closure(block0)
-        self._var_name_()
+        self._expression_()
+        self.name_last_node('left')
         self._token(':=')
         self._expression_()
+        self.name_last_node('right')
         self._token(';')
+        self.ast._define(
+            ['left', 'right'],
+            []
+        )
 
     @tatsumasu()
     def _function_call_(self):  # noqa
         self._var_name_()
+        self.name_last_node('name')
         self._token('(')
         self._cut()
 
-        def sep0():
+        def sep2():
             self._token(',')
 
-        def block0():
+        def block2():
             self._expression_()
-        self._gather(block0, sep0)
+        self._gather(block2, sep2)
+        self.name_last_node('vars')
         self._token(')')
+        self.ast._define(
+            ['name', 'vars'],
+            []
+        )
 
     @tatsumasu()
     def _function_call_stmt_(self):  # noqa
@@ -287,6 +332,8 @@ class WewParser(Parser):
                 self._var_name_()
             with self._option():
                 self._literal_()
+            with self._option():
+                self._infix_expression_()
             with self._option():
                 self._token('(')
                 self._expression_()
@@ -313,42 +360,130 @@ class WewParser(Parser):
     @tatsumasu()
     def _comparison_stmt_(self):  # noqa
         self._expression_()
-        self._comparisons_()
+        self.name_last_node('left')
+        with self._group():
+            with self._choice():
+                with self._option():
+                    self._token('==')
+                with self._option():
+                    self._token('!=')
+                with self._option():
+                    self._token('>')
+                with self._option():
+                    self._token('<')
+                with self._option():
+                    self._token('<=')
+                with self._option():
+                    self._token('>=')
+                self._error('expecting one of: != < <= == > >=')
+        self.name_last_node('op')
         self._expression_()
+        self.name_last_node('right')
+        self.ast._define(
+            ['left', 'op', 'right'],
+            []
+        )
 
     @tatsumasu()
     def _prefix_expression_(self):  # noqa
         with self._choice():
             with self._option():
                 self._token('*')
+                self.name_last_node('op')
                 self._cut()
                 self._expression_()
+                self.name_last_node('expr')
             with self._option():
                 self._token('--')
+                self.name_last_node('op')
                 self._cut()
                 self._expression_()
+                self.name_last_node('expr')
             with self._option():
                 self._token('++')
+                self.name_last_node('op')
                 self._cut()
                 self._expression_()
+                self.name_last_node('expr')
             self._error('no available options')
+        self.ast._define(
+            ['expr', 'op'],
+            []
+        )
 
     @tatsumasu()
     def _postfix_expression_(self):  # noqa
         with self._choice():
             with self._option():
                 self._expression_()
+                self.name_last_node('expr')
                 self._token('[')
                 self._cut()
                 self._expression_()
                 self._token(']')
             with self._option():
                 self._expression_()
+                self.name_last_node('expr')
                 self._token('++')
+                self.name_last_node('op')
             with self._option():
                 self._expression_()
+                self.name_last_node('expr')
                 self._token('--')
+                self.name_last_node('op')
             self._error('no available options')
+        self.ast._define(
+            ['expr', 'op'],
+            []
+        )
+
+    @tatsumasu()
+    def _infix_expression_(self):  # noqa
+        with self._choice():
+            with self._option():
+                self._expression_()
+                self.name_last_node('left')
+                self._token('+')
+                self.name_last_node('op')
+                self._expression_()
+                self.name_last_node('right')
+            with self._option():
+                self._expression_()
+                self.name_last_node('left')
+                self._token('-')
+                self.name_last_node('op')
+                self._expression_()
+                self.name_last_node('right')
+            with self._option():
+                self._mul_expr_()
+            self._error('no available options')
+        self.ast._define(
+            ['left', 'op', 'right'],
+            []
+        )
+
+    @tatsumasu()
+    def _mul_expr_(self):  # noqa
+        with self._choice():
+            with self._option():
+                self._expression_()
+                self.name_last_node('left')
+                self._token('*')
+                self.name_last_node('op')
+                self._expression_()
+                self.name_last_node('right')
+            with self._option():
+                self._expression_()
+                self.name_last_node('left')
+                self._token('/')
+                self.name_last_node('op')
+                self._expression_()
+                self.name_last_node('right')
+            self._error('no available options')
+        self.ast._define(
+            ['left', 'op', 'right'],
+            []
+        )
 
     @tatsumasu()
     def _integer_(self):  # noqa
@@ -359,12 +494,18 @@ class WewParser(Parser):
         self._pattern(r'".+"')
 
     @tatsumasu()
+    def _char_(self):  # noqa
+        self._pattern(r"'.'")
+
+    @tatsumasu()
     def _literal_(self):  # noqa
         with self._choice():
             with self._option():
                 self._integer_()
             with self._option():
                 self._string_()
+            with self._option():
+                self._char_()
             self._error('no available options')
 
     @tatsumasu()
@@ -373,7 +514,6 @@ class WewParser(Parser):
 
 
 class WewSemantics(object):
-
     def start(self, ast):  # noqa
         return ast
 
@@ -434,13 +574,22 @@ class WewSemantics(object):
     def prefix_expression(self, ast):  # noqa
         return ast
 
-    def postfix_expression(self, ast):  # noqa:
+    def postfix_expression(self, ast):  # noqa
+        return ast
+
+    def infix_expression(self, ast):  # noqa
+        return ast
+
+    def mul_expr(self, ast):  # noqa
         return ast
 
     def integer(self, ast):  # noqa
         return ast
 
     def string(self, ast):  # noqa
+        return ast
+
+    def char(self, ast):  # noqa
         return ast
 
     def literal(self, ast):  # noqa

@@ -1,0 +1,116 @@
+@@grammar::Wew
+
+start = {function_decl}+ $ ;
+
+types = 'int' ;
+
+pointer = {@+:'*'}+ ;
+
+declare_types
+  =
+  | typ:types pc:pointer
+  | typ:types '[' len:integer ']'  # list declaration
+  | typ:types
+  ;
+
+instance_types
+  =
+  | types pointer
+  | types
+  ;
+
+typed_variable = type:instance_types name:var_name ;
+
+declaration = typ:declare_types name:var_name ';' ;
+
+function_decl = typ:instance_types name:var_name '(' ~  params:','.{typed_variable}+  ')' exp:scope ;
+
+statement
+  =
+  | if_statement
+  | loop_statement
+  | assignment
+  | function_call_stmt
+  | return_stmt
+  | declaration
+  | scope
+  ;
+
+return_stmt = 'return' expr:expression ';' ;
+
+if_statement
+  =
+  | 'if' '(' expr:expression ')' stat:statement el:()
+  | 'if' '(' expr:expression ')' stat:statement 'else' ~ el:statement
+  ;
+
+loop_statement
+  =
+  | type:'while' ~ '(' expr:expression ')' stat:statement
+  | type:'do' ~ stat:statement 'while' '(' expr:expression ')' ';'
+  ;
+
+scope = '{' {statement}+ '}' ;
+
+assignment = left:expression ':=' right:expression ';' ;
+
+function_call = name:var_name '(' ~ vars:','.{expression} ')' ;
+function_call_stmt = function_call ';' ;
+
+expression
+  =
+  | function_call
+  | comparison_stmt
+  | postfix_expression
+  | prefix_expression
+  | var_name
+  | literal
+  | infix_expression
+  | '(' expression ')'
+  ;
+
+comparisons = '==' | '!=' | '>' | '<' | '<=' | '>=' ;
+
+comparison_stmt = left:expression op:(>comparisons) right:expression ;
+
+prefix_expression
+  =
+  | op:'*' ~ expr:expression
+  | op:'--' ~ expr:expression
+  | op:'++' ~ expr:expression
+  ;
+
+postfix_expression
+  =
+  | expr:expression '[' ~ expression ']'
+  | expr:expression op:'++'
+  | expr:expression op:'--'
+  ;
+
+infix_expression
+  =
+  | left:expression op:'+' right:expression
+  | left:expression op:'-' right:expression
+  | mul_expr
+  ;
+
+mul_expr
+  =
+  | left:expression op:'*' right:expression
+  | left:expression op:'/' right:expression
+  ;
+
+integer = /\d+/ ;
+string = /".+"/ ;
+char = /'.'/ ;
+
+literal
+  =
+  | integer
+  | string
+  | char
+  ;
+
+var_name = /\w+/ ;
+
+# TODO: finish

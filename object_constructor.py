@@ -91,13 +91,25 @@ class ObjectConstructor(WewSemantics):
         return ast
 
     def integer(self, ast):  # noqa
+        print(f"Iteger Literal: {ast}")
         return ast
 
     def string(self, ast):  # noqa
+        print("String Literal: {ast}")
         return ast
 
     def literal(self, ast):  # noqa
+        print("Literal: {ast}")
         return ast
 
     def var_name(self, ast):  # noqa
+        print("Var Name: {ast}")
         return ast
+
+    def infix_expression(self, ast):  # noqa
+        print("Infix Expr: {ast}")
+        return ast
+
+    def mul_expr(self, ast):  # noqa
+        return ast
+

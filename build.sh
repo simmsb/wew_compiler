@@ -1,1 +1,2 @@
-python -m tatsu lang.ebnf -o wewparser.py
+#!/bin/bash
+python -m tatsu lang.tatsu -o wewparser.py
