@@ -28,8 +28,8 @@ class WewBuffer(Buffer):
         text,
         whitespace=None,
         nameguard=None,
-        comments_re=None,
-        eol_comments_re=None,
+        comments_re='{~(\\n|.)*~}',
+        eol_comments_re='\\/\\/.*?$',
         ignorecase=None,
         namechars='',
         **kwargs
@@ -51,8 +51,8 @@ class WewParser(Parser):
         self,
         whitespace=None,
         nameguard=None,
-        comments_re=None,
-        eol_comments_re=None,
+        comments_re='{~(\\n|.)*~}',
+        eol_comments_re='\\/\\/.*?$',
         ignorecase=None,
         left_recursion=True,
         parseinfo=True,
@@ -98,30 +98,6 @@ class WewParser(Parser):
         self._positive_closure(block0)
 
     @tatsumasu()
-    def _declare_types_(self):  # noqa
-        with self._choice():
-            with self._option():
-                self._types_()
-                self.name_last_node('typ')
-                self._pointer_()
-                self.name_last_node('pc')
-            with self._option():
-                self._types_()
-                self.name_last_node('typ')
-                self._token('[')
-                self._integer_()
-                self.name_last_node('len')
-                self._token(']')
-            with self._option():
-                self._types_()
-                self.name_last_node('typ')
-            self._error('no available options')
-        self.ast._define(
-            ['len', 'pc', 'typ'],
-            []
-        )
-
-    @tatsumasu()
     def _instance_types_(self):  # noqa
         with self._choice():
             with self._option():
@@ -135,7 +111,7 @@ class WewParser(Parser):
     def _typed_variable_(self):  # noqa
         self._instance_types_()
         self.name_last_node('type')
-        self._var_name_()
+        self._identifier_()
         self.name_last_node('name')
         self.ast._define(
             ['name', 'type'],
@@ -144,58 +120,92 @@ class WewParser(Parser):
 
     @tatsumasu()
     def _declaration_(self):  # noqa
-        self._declare_types_()
-        self.name_last_node('typ')
-        self._var_name_()
-        self.name_last_node('name')
-        self._token(';')
+        with self._choice():
+            with self._option():
+                self._types_()
+                self.name_last_node('type')
+                self._pointer_()
+                self.name_last_node('pt')
+                self._identifier_()
+                self.name_last_node('name')
+                self._token(';')
+                self._constant('pointer')
+                self.name_last_node('ref')
+            with self._option():
+                self._types_()
+                self.name_last_node('type')
+                self._identifier_()
+                self.name_last_node('name')
+                self._token('[')
+                self._integer_()
+                self.name_last_node('pt')
+                self._token(']')
+                self._token(';')
+                self._constant('list')
+                self.name_last_node('ref')
+            with self._option():
+                self._types_()
+                self.name_last_node('type')
+                self._identifier_()
+                self.name_last_node('name')
+            self._error('no available options')
         self.ast._define(
-            ['name', 'typ'],
+            ['name', 'pt', 'ref', 'type'],
             []
         )
 
     @tatsumasu()
     def _function_decl_(self):  # noqa
         self._instance_types_()
-        self.name_last_node('typ')
-        self._var_name_()
+        self.name_last_node('type')
+        self._identifier_()
         self.name_last_node('name')
         self._token('(')
-        self._cut()
 
         def sep3():
             self._token(',')
 
         def block3():
             self._typed_variable_()
-        self._positive_gather(block3, sep3)
+        self._gather(block3, sep3)
         self.name_last_node('params')
         self._token(')')
-        self._scope_()
-        self.name_last_node('exp')
+        self._token('{')
+        self._multi_statements_()
+        self.name_last_node('stat')
+        self._token('}')
         self.ast._define(
-            ['exp', 'name', 'params', 'typ'],
+            ['name', 'params', 'stat', 'type'],
             []
         )
+
+    @tatsumasu()
+    def _multi_statements_(self):  # noqa
+
+        def block0():
+            self._statement_()
+            self.add_last_node_to_name('@')
+        self._closure(block0)
 
     @tatsumasu()
     def _statement_(self):  # noqa
         with self._choice():
             with self._option():
+                self._expression_stmt_()
+            with self._option():
                 self._if_statement_()
             with self._option():
                 self._loop_statement_()
             with self._option():
-                self._assignment_()
-            with self._option():
-                self._function_call_stmt_()
-            with self._option():
                 self._return_stmt_()
             with self._option():
                 self._declaration_()
-            with self._option():
-                self._scope_()
             self._error('no available options')
+
+    @tatsumasu()
+    def _expression_stmt_(self):  # noqa
+        self._expression_()
+        self._token(';')
 
     @tatsumasu()
     def _return_stmt_(self):  # noqa
@@ -210,32 +220,22 @@ class WewParser(Parser):
 
     @tatsumasu()
     def _if_statement_(self):  # noqa
-        with self._choice():
-            with self._option():
-                self._token('if')
-                self._token('(')
-                self._expression_()
-                self.name_last_node('expr')
-                self._token(')')
-                self._statement_()
-                self.name_last_node('stat')
-                self._void()
-                self.name_last_node('el')
-            with self._option():
-                self._token('if')
-                self._token('(')
-                self._expression_()
-                self.name_last_node('expr')
-                self._token(')')
-                self._statement_()
-                self.name_last_node('stat')
-                self._token('else')
-                self._cut()
-                self._statement_()
-                self.name_last_node('el')
-            self._error('no available options')
+        self._token('if')
+        self._cut()
+        self._token('(')
+        self._expression_()
+        self.name_last_node('expr')
+        self._token(')')
+        self._token('{')
+        self._multi_statements_()
+        self.name_last_node('stat')
+        self._token('}')
+        with self._optional():
+            self._token('else')
+            self._multi_statements_()
+            self.name_last_node('else_')
         self.ast._define(
-            ['el', 'expr', 'stat'],
+            ['else_', 'expr', 'stat'],
             []
         )
 
@@ -250,14 +250,18 @@ class WewParser(Parser):
                 self._expression_()
                 self.name_last_node('expr')
                 self._token(')')
-                self._statement_()
+                self._token('{')
+                self._multi_statements_()
                 self.name_last_node('stat')
+                self._token('}')
             with self._option():
                 self._token('do')
                 self.name_last_node('type')
                 self._cut()
-                self._statement_()
+                self._token('{')
+                self._multi_statements_()
                 self.name_last_node('stat')
+                self._token('}')
                 self._token('while')
                 self._token('(')
                 self._expression_()
@@ -271,33 +275,23 @@ class WewParser(Parser):
         )
 
     @tatsumasu()
-    def _scope_(self):  # noqa
-        self._token('{')
-
-        def block0():
-            self._statement_()
-        self._positive_closure(block0)
-        self._token('}')
-
-    @tatsumasu()
-    def _assignment_(self):  # noqa
-        self._expression_()
-        self.name_last_node('left')
-        self._token(':=')
-        self._expression_()
-        self.name_last_node('right')
-        self._token(';')
-        self.ast._define(
-            ['left', 'right'],
-            []
-        )
+    def _primary_expression_(self):  # noqa
+        with self._choice():
+            with self._option():
+                self._identifier_()
+            with self._option():
+                self._literal_()
+            with self._option():
+                self._token('(')
+                self._expression_()
+                self._token(')')
+            self._error('no available options')
 
     @tatsumasu()
     def _function_call_(self):  # noqa
-        self._var_name_()
+        self._identifier_()
         self.name_last_node('name')
         self._token('(')
-        self._cut()
 
         def sep2():
             self._token(',')
@@ -313,70 +307,223 @@ class WewParser(Parser):
         )
 
     @tatsumasu()
-    def _function_call_stmt_(self):  # noqa
-        self._function_call_()
-        self._token(';')
-
-    @tatsumasu()
-    def _expression_(self):  # noqa
+    def _postfix_expression_(self):  # noqa
         with self._choice():
             with self._option():
-                self._function_call_()
-            with self._option():
-                self._comparison_stmt_()
-            with self._option():
-                self._postfix_expression_()
-            with self._option():
-                self._prefix_expression_()
-            with self._option():
-                self._var_name_()
-            with self._option():
-                self._literal_()
-            with self._option():
-                self._infix_expression_()
-            with self._option():
-                self._token('(')
                 self._expression_()
-                self._token(')')
+                self.name_last_node('expr')
+                self._token('[')
+                self._expression_()
+                self.name_last_node('val')
+                self._token(']')
+                self._constant('list')
+                self.name_last_node('op')
+            with self._option():
+                self._expression_()
+                self.name_last_node('expr')
+                self._token('++')
+                self.name_last_node('op')
+            with self._option():
+                self._expression_()
+                self.name_last_node('expr')
+                self._token('--')
+                self.name_last_node('op')
             self._error('no available options')
+        self.ast._define(
+            ['expr', 'op', 'val'],
+            []
+        )
 
     @tatsumasu()
-    def _comparisons_(self):  # noqa
+    def _unary_expression_(self):  # noqa
         with self._choice():
             with self._option():
-                self._token('==')
+                self._token('--')
+                self.name_last_node('op')
+                self._cut()
+                self._expression_()
+                self.name_last_node('expr')
             with self._option():
-                self._token('!=')
+                self._token('++')
+                self.name_last_node('op')
+                self._cut()
+                self._expression_()
+                self.name_last_node('expr')
             with self._option():
-                self._token('>')
-            with self._option():
-                self._token('<')
-            with self._option():
-                self._token('<=')
-            with self._option():
-                self._token('>=')
-            self._error('expecting one of: != < <= == > >=')
+                self._un_op_()
+                self.name_last_node('op')
+                self._cut()
+                self._expression_()
+                self.name_last_node('expr')
+            self._error('no available options')
+        self.ast._define(
+            ['expr', 'op'],
+            []
+        )
 
     @tatsumasu()
-    def _comparison_stmt_(self):  # noqa
+    def _un_op_(self):  # noqa
+        with self._choice():
+            with self._option():
+                self._token('*')
+            with self._option():
+                self._token('-')
+            with self._option():
+                self._token('+')
+            with self._option():
+                self._token('~')
+            with self._option():
+                self._token('!')
+            self._error('expecting one of: ! * + - ~')
+
+    @tatsumasu()
+    def _mult_expression_(self):  # noqa
+        with self._choice():
+            with self._option():
+                self._expression_()
+                self.name_last_node('left')
+                self._token('*')
+                self.name_last_node('op')
+                self._cut()
+                self._expression_()
+                self.name_last_node('right')
+            with self._option():
+                self._expression_()
+                self.name_last_node('left')
+                self._token('/')
+                self.name_last_node('op')
+                self._cut()
+                self._expression_()
+                self.name_last_node('right')
+            self._error('no available options')
+        self.ast._define(
+            ['left', 'op', 'right'],
+            []
+        )
+
+    @tatsumasu()
+    def _add_expression_(self):  # noqa
+        with self._choice():
+            with self._option():
+                self._expression_()
+                self.name_last_node('left')
+                self._token('+')
+                self.name_last_node('op')
+                self._cut()
+                self._expression_()
+                self.name_last_node('right')
+            with self._option():
+                self._expression_()
+                self.name_last_node('left')
+                self._token('-')
+                self.name_last_node('op')
+                self._cut()
+                self._expression_()
+                self.name_last_node('right')
+            self._error('no available options')
+        self.ast._define(
+            ['left', 'op', 'right'],
+            []
+        )
+
+    @tatsumasu()
+    def _shift_expression_(self):  # noqa
+        with self._choice():
+            with self._option():
+                self._expression_()
+                self.name_last_node('left')
+                self._token('<<')
+                self.name_last_node('op')
+                self._cut()
+                self._expression_()
+                self.name_last_node('right')
+            with self._option():
+                self._expression_()
+                self.name_last_node('left')
+                self._token('>>')
+                self.name_last_node('op')
+                self._cut()
+                self._expression_()
+                self.name_last_node('right')
+            self._error('no available options')
+        self.ast._define(
+            ['left', 'op', 'right'],
+            []
+        )
+
+    @tatsumasu()
+    def _relative_expression_(self):  # noqa
+        with self._choice():
+            with self._option():
+                self._expression_()
+                self.name_last_node('left')
+                self._token('>')
+                self.name_last_node('op')
+                self._cut()
+                self._expression_()
+                self.name_last_node('right')
+            with self._option():
+                self._expression_()
+                self.name_last_node('left')
+                self._token('<')
+                self.name_last_node('op')
+                self._cut()
+                self._expression_()
+                self.name_last_node('right')
+            with self._option():
+                self._expression_()
+                self.name_last_node('left')
+                self._token('>=')
+                self.name_last_node('op')
+                self._cut()
+                self._expression_()
+                self.name_last_node('right')
+            with self._option():
+                self._expression_()
+                self.name_last_node('left')
+                self._token('<=')
+                self.name_last_node('op')
+                self._cut()
+                self._expression_()
+                self.name_last_node('right')
+            self._error('no available options')
+        self.ast._define(
+            ['left', 'op', 'right'],
+            []
+        )
+
+    @tatsumasu()
+    def _equality_expression_(self):  # noqa
+        with self._choice():
+            with self._option():
+                self._expression_()
+                self.name_last_node('left')
+                self._token('==')
+                self.name_last_node('op')
+                self._cut()
+                self._expression_()
+                self.name_last_node('right')
+            with self._option():
+                self._expression_()
+                self.name_last_node('left')
+                self._token('!=')
+                self.name_last_node('op')
+                self._cut()
+                self._expression_()
+                self.name_last_node('right')
+            self._error('no available options')
+        self.ast._define(
+            ['left', 'op', 'right'],
+            []
+        )
+
+    @tatsumasu()
+    def _and_expression_(self):  # noqa
         self._expression_()
         self.name_last_node('left')
-        with self._group():
-            with self._choice():
-                with self._option():
-                    self._token('==')
-                with self._option():
-                    self._token('!=')
-                with self._option():
-                    self._token('>')
-                with self._option():
-                    self._token('<')
-                with self._option():
-                    self._token('<=')
-                with self._option():
-                    self._token('>=')
-                self._error('expecting one of: != < <= == > >=')
+        self._token('&')
         self.name_last_node('op')
+        self._cut()
         self._expression_()
         self.name_last_node('right')
         self.ast._define(
@@ -385,105 +532,109 @@ class WewParser(Parser):
         )
 
     @tatsumasu()
-    def _prefix_expression_(self):  # noqa
-        with self._choice():
-            with self._option():
-                self._token('*')
-                self.name_last_node('op')
-                self._cut()
-                self._expression_()
-                self.name_last_node('expr')
-            with self._option():
-                self._token('--')
-                self.name_last_node('op')
-                self._cut()
-                self._expression_()
-                self.name_last_node('expr')
-            with self._option():
-                self._token('++')
-                self.name_last_node('op')
-                self._cut()
-                self._expression_()
-                self.name_last_node('expr')
-            self._error('no available options')
-        self.ast._define(
-            ['expr', 'op'],
-            []
-        )
-
-    @tatsumasu()
-    def _postfix_expression_(self):  # noqa
-        with self._choice():
-            with self._option():
-                self._expression_()
-                self.name_last_node('expr')
-                self._token('[')
-                self._cut()
-                self._expression_()
-                self._token(']')
-            with self._option():
-                self._expression_()
-                self.name_last_node('expr')
-                self._token('++')
-                self.name_last_node('op')
-            with self._option():
-                self._expression_()
-                self.name_last_node('expr')
-                self._token('--')
-                self.name_last_node('op')
-            self._error('no available options')
-        self.ast._define(
-            ['expr', 'op'],
-            []
-        )
-
-    @tatsumasu()
-    def _infix_expression_(self):  # noqa
-        with self._choice():
-            with self._option():
-                self._expression_()
-                self.name_last_node('left')
-                self._token('+')
-                self.name_last_node('op')
-                self._expression_()
-                self.name_last_node('right')
-            with self._option():
-                self._expression_()
-                self.name_last_node('left')
-                self._token('-')
-                self.name_last_node('op')
-                self._expression_()
-                self.name_last_node('right')
-            with self._option():
-                self._mul_expr_()
-            self._error('no available options')
+    def _xor_expression_(self):  # noqa
+        self._expression_()
+        self.name_last_node('left')
+        self._token('^')
+        self.name_last_node('op')
+        self._cut()
+        self._expression_()
+        self.name_last_node('right')
         self.ast._define(
             ['left', 'op', 'right'],
             []
         )
 
     @tatsumasu()
-    def _mul_expr_(self):  # noqa
-        with self._choice():
-            with self._option():
-                self._expression_()
-                self.name_last_node('left')
-                self._token('*')
-                self.name_last_node('op')
-                self._expression_()
-                self.name_last_node('right')
-            with self._option():
-                self._expression_()
-                self.name_last_node('left')
-                self._token('/')
-                self.name_last_node('op')
-                self._expression_()
-                self.name_last_node('right')
-            self._error('no available options')
+    def _or_expression_(self):  # noqa
+        self._expression_()
+        self.name_last_node('left')
+        self._token('|')
+        self.name_last_node('op')
+        self._cut()
+        self._expression_()
+        self.name_last_node('right')
         self.ast._define(
             ['left', 'op', 'right'],
             []
         )
+
+    @tatsumasu()
+    def _land_expression_(self):  # noqa
+        self._expression_()
+        self.name_last_node('left')
+        self._token('&&')
+        self.name_last_node('op')
+        self._cut()
+        self._expression_()
+        self.name_last_node('right')
+        self.ast._define(
+            ['left', 'op', 'right'],
+            []
+        )
+
+    @tatsumasu()
+    def _lor_expression_(self):  # noqa
+        self._expression_()
+        self.name_last_node('left')
+        self._token('||')
+        self.name_last_node('op')
+        self._cut()
+        self._expression_()
+        self.name_last_node('right')
+        self.ast._define(
+            ['left', 'op', 'right'],
+            []
+        )
+
+    @tatsumasu()
+    def _assign_expression_(self):  # noqa
+        self._expression_()
+        self.name_last_node('left')
+        self._token(':=')
+        self.name_last_node('op')
+        self._cut()
+        self._expression_()
+        self.name_last_node('right')
+        self.ast._define(
+            ['left', 'op', 'right'],
+            []
+        )
+
+    @tatsumasu()
+    def _expression_(self):  # noqa
+        with self._choice():
+            with self._option():
+                self._assign_expression_()
+            with self._option():
+                self._lor_expression_()
+            with self._option():
+                self._land_expression_()
+            with self._option():
+                self._or_expression_()
+            with self._option():
+                self._xor_expression_()
+            with self._option():
+                self._and_expression_()
+            with self._option():
+                self._equality_expression_()
+            with self._option():
+                self._relative_expression_()
+            with self._option():
+                self._shift_expression_()
+            with self._option():
+                self._add_expression_()
+            with self._option():
+                self._mult_expression_()
+            with self._option():
+                self._unary_expression_()
+            with self._option():
+                self._postfix_expression_()
+            with self._option():
+                self._function_call_()
+            with self._option():
+                self._primary_expression_()
+            self._error('no available options')
 
     @tatsumasu()
     def _integer_(self):  # noqa
@@ -502,15 +653,28 @@ class WewParser(Parser):
         with self._choice():
             with self._option():
                 self._integer_()
+                self.name_last_node('val')
+                self._constant('int')
+                self.name_last_node('type')
             with self._option():
                 self._string_()
+                self.name_last_node('val')
+                self._constant('str')
+                self.name_last_node('type')
             with self._option():
                 self._char_()
+                self.name_last_node('val')
+                self._constant('char')
+                self.name_last_node('type')
             self._error('no available options')
+        self.ast._define(
+            ['type', 'val'],
+            []
+        )
 
     @tatsumasu()
-    def _var_name_(self):  # noqa
-        self._pattern(r'\w+')
+    def _identifier_(self):  # noqa
+        self._pattern(r'[A-Za-z]\w+')
 
 
 class WewSemantics(object):
@@ -521,9 +685,6 @@ class WewSemantics(object):
         return ast
 
     def pointer(self, ast):  # noqa
-        return ast
-
-    def declare_types(self, ast):  # noqa
         return ast
 
     def instance_types(self, ast):  # noqa
@@ -538,7 +699,13 @@ class WewSemantics(object):
     def function_decl(self, ast):  # noqa
         return ast
 
+    def multi_statements(self, ast):  # noqa
+        return ast
+
     def statement(self, ast):  # noqa
+        return ast
+
+    def expression_stmt(self, ast):  # noqa
         return ast
 
     def return_stmt(self, ast):  # noqa
@@ -550,37 +717,55 @@ class WewSemantics(object):
     def loop_statement(self, ast):  # noqa
         return ast
 
-    def scope(self, ast):  # noqa
-        return ast
-
-    def assignment(self, ast):  # noqa
+    def primary_expression(self, ast):  # noqa
         return ast
 
     def function_call(self, ast):  # noqa
         return ast
 
-    def function_call_stmt(self, ast):  # noqa
-        return ast
-
-    def expression(self, ast):  # noqa
-        return ast
-
-    def comparisons(self, ast):  # noqa
-        return ast
-
-    def comparison_stmt(self, ast):  # noqa
-        return ast
-
-    def prefix_expression(self, ast):  # noqa
-        return ast
-
     def postfix_expression(self, ast):  # noqa
         return ast
 
-    def infix_expression(self, ast):  # noqa
+    def unary_expression(self, ast):  # noqa
         return ast
 
-    def mul_expr(self, ast):  # noqa
+    def un_op(self, ast):  # noqa
+        return ast
+
+    def mult_expression(self, ast):  # noqa
+        return ast
+
+    def add_expression(self, ast):  # noqa
+        return ast
+
+    def shift_expression(self, ast):  # noqa
+        return ast
+
+    def relative_expression(self, ast):  # noqa
+        return ast
+
+    def equality_expression(self, ast):  # noqa
+        return ast
+
+    def and_expression(self, ast):  # noqa
+        return ast
+
+    def xor_expression(self, ast):  # noqa
+        return ast
+
+    def or_expression(self, ast):  # noqa
+        return ast
+
+    def land_expression(self, ast):  # noqa
+        return ast
+
+    def lor_expression(self, ast):  # noqa
+        return ast
+
+    def assign_expression(self, ast):  # noqa
+        return ast
+
+    def expression(self, ast):  # noqa
         return ast
 
     def integer(self, ast):  # noqa
@@ -595,7 +780,7 @@ class WewSemantics(object):
     def literal(self, ast):  # noqa
         return ast
 
-    def var_name(self, ast):  # noqa
+    def identifier(self, ast):  # noqa
         return ast
 
 

@@ -1,115 +1,110 @@
 """Object tree generation."""
 import objects
-from wewparser import WewSemantics
 
 
-class ObjectConstructor(WewSemantics):
-    """Class used to generate program objects from ast, as a means of preprocessing."""
-
-    def _default(self, ast):
-        print(f"DEFAULT: {ast}")
-        return ast
+class ObjectConstructor(object):
 
     def start(self, ast):  # noqa
         return ast
 
     def types(self, ast):  # noqa
-        print(f"TYPE: {ast}")
         return ast
 
     def pointer(self, ast):  # noqa
-        print(f"POINTER: {ast}")
-        return ast
-
-    def declare_types(self, ast):  # noqa
-        print(f"Decl type: {ast}")
         return ast
 
     def instance_types(self, ast):  # noqa
-        print(f"Inst type: {ast}")
         return ast
 
     def typed_variable(self, ast):  # noqa
-        return objects.TypedVariable(ast[0], ast[1])
+        return objects.TypedVariable(ast)
 
     def declaration(self, ast):  # noqa
-        print("Declaration: {ast}")
-        return ast
+        return objects.DeclaredVariable(ast)
 
     def function_decl(self, ast):  # noqa
         return objects.FunctionDecl(ast)
 
+    def multi_statements(self, ast):  # noqa
+        return ast
+
     def statement(self, ast):  # noqa
-        print(f"Statement: {ast}")
+        return ast
+
+    def expression_stmt(self, ast):  # noqa
         return ast
 
     def return_stmt(self, ast):  # noqa
-        print(f"Ret: {ast}")
-        return ast
+        return objects.ReturnStmt(ast)
 
     def if_statement(self, ast):  # noqa
-        print(f"IF: {ast}")
-        return ast
+        return objects.IfStmt(ast)
 
     def loop_statement(self, ast):  # noqa
-        print(f"LOOP: {ast}")
-        return ast
+        return objects.LoopStmt(ast)
 
-    def scope(self, ast):  # noqa
-        print(f"SCOPE: {ast}")
-        return ast
-
-    def assignment(self, ast):  # noqa
-        print(f"ASSIGN: {ast}")
+    def primary_expression(self, ast):  # noqa
         return ast
 
     def function_call(self, ast):  # noqa
-        print(f"FunCall: {ast}")
+        return objects.FuncCall(ast)
+
+    def postfix_expression(self, ast):  # noqa
+        return objects.PostfixOp(ast)
+
+    def unary_expression(self, ast):  # noqa
+        return objects.UnaryOp(ast)
+
+    def un_op(self, ast):  # noqa
         return ast
 
-    def function_call_stmt(self, ast):  # noqa
-        print(f"FunCallStmt: {ast}")
-        return ast
+    def mult_expression(self, ast):  # noqa
+        return objects.MulExpr(ast)
+
+    def add_expression(self, ast):  # noqa
+        return objects.AddExpr(ast)
+
+    def shift_expression(self, ast):  # noqa
+        return objects.ShiftExpr(ast)
+
+    def relative_expression(self, ast):  # noqa
+        return objects.RelExpr(ast)
+
+    def equality_expression(self, ast):  # noqa
+        return objects.EqExpr(ast)
+
+    def and_expression(self, ast):  # noqa
+        return objects.AndExpr(ast)
+
+    def xor_expression(self, ast):  # noqa
+        return objects.XorExpr(ast)
+
+    def or_expression(self, ast):  # noqa
+        return objects.OrExpr(ast)
+
+    def land_expression(self, ast):  # noqa
+        return objects.LAndExpr(ast)
+
+    def lor_expression(self, ast):  # noqa
+        return objects.LOrExpr(ast)
+
+    def assign_expression(self, ast):  # noqa
+        return objects.AssignExpr(ast)
 
     def expression(self, ast):  # noqa
-        print(f"EXPR: {ast}")
-        return ast
-
-    def comparisons(self, ast):  # noqa
-        return ast
-
-    def comparison_stmt(self, ast):  # noqa
-        print(f"Comp stmt: {ast}")
-        return ast
-
-    def prefix_expression(self, ast):  # noqa
-        print(f"Prefix expr: {ast}")
-        return ast
-
-    def postfix_expression(self, ast):  # noqa:
-        print(f"Postfix expr: {ast}")
         return ast
 
     def integer(self, ast):  # noqa
-        print(f"Iteger Literal: {ast}")
         return ast
 
     def string(self, ast):  # noqa
-        print("String Literal: {ast}")
+        return ast
+
+    def char(self, ast):  # noqa
         return ast
 
     def literal(self, ast):  # noqa
-        print("Literal: {ast}")
-        return ast
+        return objects.Literal(ast)
 
-    def var_name(self, ast):  # noqa
-        print("Var Name: {ast}")
-        return ast
-
-    def infix_expression(self, ast):  # noqa
-        print("Infix Expr: {ast}")
-        return ast
-
-    def mul_expr(self, ast):  # noqa
-        return ast
-
+    def identifier(self, ast):  # noqa
+        return objects.Identifier(ast)

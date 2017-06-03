@@ -1,17 +1,13 @@
 @@grammar::Wew
 
+@@comments::/{~(\n|.)*~}/
+@@eol_comments::/\/\/.*?$/
+
 start = {function_decl}+ $ ;
 
 types = 'int' ;
 
 pointer = {@+:'*'}+ ;
-
-declare_types
-  =
-  | typ:types pc:pointer
-  | typ:types '[' len:integer ']'  # list declaration
-  | typ:types
-  ;
 
 instance_types
   =
@@ -19,85 +15,166 @@ instance_types
   | types
   ;
 
-typed_variable = type:instance_types name:var_name ;
+typed_variable
+  =
+  type:instance_types name:identifier
+  ;
 
-declaration = typ:declare_types name:var_name ';' ;
+declaration
+  =
+  | type:types pt:pointer name:identifier ';' ref:`pointer`
+  | type:types name:identifier '[' pt:integer ']' ';' ref:`list`
+  | type:types name:identifier
+  ;
 
-function_decl = typ:instance_types name:var_name '(' ~  params:','.{typed_variable}+  ')' exp:scope ;
+function_decl
+  =
+  type:instance_types name:identifier '(' params:','.{typed_variable} ')' '{' stat:multi_statements '}'
+  ;
+
+multi_statements
+  =
+  {@+:statement}
+  ;
 
 statement
   =
+  | expression_stmt
   | if_statement
   | loop_statement
-  | assignment
-  | function_call_stmt
   | return_stmt
   | declaration
-  | scope
   ;
 
-return_stmt = 'return' expr:expression ';' ;
+expression_stmt
+  =
+  expression ';'
+  ;
+
+return_stmt
+  =
+  'return' expr:expression ';'
+  ;
 
 if_statement
   =
-  | 'if' '(' expr:expression ')' stat:statement el:()
-  | 'if' '(' expr:expression ')' stat:statement 'else' ~ el:statement
+  'if' ~ '(' expr:expression ')' '{' stat:multi_statements '}' ['else' else:multi_statements]
   ;
 
 loop_statement
   =
-  | type:'while' ~ '(' expr:expression ')' stat:statement
-  | type:'do' ~ stat:statement 'while' '(' expr:expression ')' ';'
+  | type:'while' ~ '(' expr:expression ')' '{' stat:multi_statements '}'
+  | type:'do' ~ '{' stat:multi_statements '}' 'while' '(' expr:expression ')' ';'
   ;
 
-scope = '{' {statement}+ '}' ;
 
-assignment = left:expression ':=' right:expression ';' ;
-
-function_call = name:var_name '(' ~ vars:','.{expression} ')' ;
-function_call_stmt = function_call ';' ;
-
-expression
+primary_expression
   =
-  | function_call
-  | comparison_stmt
-  | postfix_expression
-  | prefix_expression
-  | var_name
+  | identifier
   | literal
-  | infix_expression
   | '(' expression ')'
   ;
 
-comparisons = '==' | '!=' | '>' | '<' | '<=' | '>=' ;
-
-comparison_stmt = left:expression op:(>comparisons) right:expression ;
-
-prefix_expression
+function_call
   =
-  | op:'*' ~ expr:expression
-  | op:'--' ~ expr:expression
-  | op:'++' ~ expr:expression
+  name:identifier '(' vars:','.{expression} ')'
   ;
 
 postfix_expression
   =
-  | expr:expression '[' ~ expression ']'
+  | expr:expression '[' val:expression ']' op:`list`
   | expr:expression op:'++'
   | expr:expression op:'--'
   ;
 
-infix_expression
+unary_expression
   =
-  | left:expression op:'+' right:expression
-  | left:expression op:'-' right:expression
-  | mul_expr
+  | op:'--' ~ expr:expression
+  | op:'++' ~ expr:expression
+  | op:un_op ~ expr:expression
   ;
 
-mul_expr
+un_op = '*' | '-' | '+' | '~' | '!' ;
+
+mult_expression
   =
-  | left:expression op:'*' right:expression
-  | left:expression op:'/' right:expression
+  | left:expression op:'*' ~ right:expression
+  | left:expression op:'/' ~ right:expression
+  ;
+
+add_expression
+  =
+  | left:expression op:'+' ~ right:expression
+  | left:expression op:'-' ~ right:expression
+  ;
+
+shift_expression
+  =
+  | left:expression op:'<<' ~ right:expression
+  | left:expression op:'>>' ~ right:expression
+  ;
+
+relative_expression
+  =
+  | left:expression op:'>' ~ right:expression
+  | left:expression op:'<' ~ right:expression
+  | left:expression op:'>=' ~ right:expression
+  | left:expression op:'<=' ~ right:expression
+  ;
+
+equality_expression
+  =
+  | left:expression op:'==' ~ right:expression
+  | left:expression op:'!=' ~ right:expression
+  ;
+
+and_expression
+  =
+  left:expression op:'&' ~ right:expression
+  ;
+
+xor_expression
+  =
+  left:expression op:'^' ~ right:expression
+  ;
+
+or_expression
+  =
+  left:expression op:'|' ~ right:expression
+  ;
+
+land_expression
+  =
+  left:expression op:'&&' ~ right:expression
+  ;
+
+lor_expression
+  =
+  left:expression op:'||' ~ right:expression
+  ;
+
+assign_expression
+  =
+  left:expression op:':=' ~ right:expression
+  ;
+
+expression
+  =
+  | assign_expression
+  | lor_expression
+  | land_expression
+  | or_expression
+  | xor_expression
+  | and_expression
+  | equality_expression
+  | relative_expression
+  | shift_expression
+  | add_expression
+  | mult_expression
+  | unary_expression
+  | postfix_expression
+  | function_call
+  | primary_expression
   ;
 
 integer = /\d+/ ;
@@ -106,11 +183,11 @@ char = /'.'/ ;
 
 literal
   =
-  | integer
-  | string
-  | char
+  | val:integer type:`int`
+  | val:string type:`str`
+  | val:char type:`char`
   ;
 
-var_name = /\w+/ ;
+identifier = /[A-Za-z]\w+/ ;
 
 # TODO: finish

@@ -1,3 +1,5 @@
 """Module holding all object types together."""
-from .typed_variable import TypedVariable
-from .function_decl import FunctionDecl
+from .declarations import FunctionDecl, TypedVariable
+from .literals import Identifier, Literal
+from .operations import *
+from .statements import IfStmt, LoopStmt, ReturnStmt

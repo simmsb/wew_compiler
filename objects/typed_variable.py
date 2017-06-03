@@ -1,8 +1,8 @@
 class TypedVariable:
 
-    def __init__(self, type_, name):
-        self.type = type_
-        self.name = name
+    def __init__(self, ast):
+        self.type = ast["type"]
+        self.name = ast["name"]
 
     def __str__(self):
-        return f"<VARIABLE name:{self.name} type:{self.type_}"
+        return f"<VARIABLE <NAME:{self.name}> <TYPE:{self.type_}>>"

@@ -1,11 +1,5 @@
 int main(int that, int * this) {
-  if (1 < 2) {
-    print(that);
-    return *wew;
-    do {
-      print();
-    } while (a > b);
-    something := a + b-- * (2 / *h);
-    that:= *(*(a--) + 4);
+  if (*-1 < 2 * 3 + wot(this, that*4)) {
+    print(this);
   }
 }
