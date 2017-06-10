@@ -1,0 +1,83 @@
+@@grammar::Calc
+@@parseinfo::True
+
+start
+    =
+    expression $
+    ;
+
+
+expression
+    =
+    | addition
+    | subtraction
+    | term
+    ;
+
+
+addition
+    =
+    left:term op:'+' ~ right:expression
+    ;
+
+
+subtraction
+    =
+    left:term op:'-' ~ right:expression
+    ;
+
+
+term
+    =
+    | multiplication
+    | division
+    | unary
+    ;
+
+
+multiplication
+    =
+    left:unary op:'*' ~ right:term
+    ;
+
+
+division
+    =
+    left:unary op:'/' ~ right:term
+    ;
+
+unop
+    =
+    op:('*' | '-' | '+' | '~' | '!' | '--' | '++') ~ right:unary
+    ;
+
+postop
+    =
+    | left:factor op:('++' | '--') type:`a`
+    | left:factor '[' ~ op:expression ']' type:`b`
+    ;
+
+unary
+  =
+  | unop
+  | postop
+  | factor
+  ;
+
+factor
+    =
+    | subexpression
+    | number
+    ;
+
+
+subexpression
+    =
+    '(' ~ @:expression ')'
+    ;
+
+
+number
+    =
+    /\d+/
+    ;

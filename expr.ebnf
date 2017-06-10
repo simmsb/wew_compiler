@@ -1,74 +1,9 @@
-@@grammar::Wew
-
-@@comments::/{~(\n|.)*~}/
-@@eol_comments::/\/\/.*?$/
-
-start = {function_decl}+ $ ;
-
-types = 'int' ;
-
-pointer = {@+:'*'}+ ;
-
-instance_types
-  =
-  | types pointer
-  | types
-  ;
-
-typed_variable
-  =
-  type:instance_types name:identifier
-  ;
-
-declaration
-  =
-  | type:types pt:pointer name:identifier ';' ref:`pointer`
-  | type:types name:identifier '[' pt:integer ']' ';' ref:`list`
-  | type:types name:identifier
-  ;
-
-function_decl
-  =
-  type:instance_types name:identifier '(' params:','.{typed_variable} ')' stat:scope
-  ;
-
-scope
-  =
-  '{' {@+:statement} '}'
-  ;
-
-statement
-  =
-  | expression_stmt
-  | if_statement
-  | loop_statement
-  | return_stmt
-  | declaration
-  | scope
-  ;
-
-expression_stmt
-  =
-  expression ';'
-  ;
-
-return_stmt
-  =
-  'return' expr:expression ';'
-  ;
-
-if_statement
-  =
-  'if' ~ '(' expr:expression ')' stat:statement ['else' else:statement]
-  ;
-
-loop_statement
-  =
-  | type:'while' ~ '(' expr:expression ')' stat:statement
-  | type:'do' ~ stat:statement 'while' '(' expr:expression ')' ';'
-  ;
+@@grammar::test
+@@parseinfo::False
+start = expression $ ;
 
 expression = assign_expression ;
+
 
 assign_expression
   =
@@ -175,5 +110,3 @@ literal
   ;
 
 identifier = /[A-Za-z]\w+/ ;
-
-# TODO: finish
