@@ -1,5 +1,5 @@
 @@grammar::Calc
-@@parseinfo::True
+@@parseinfo::False
 
 start
     =
@@ -48,32 +48,37 @@ division
 
 unop
     =
-    op:('*' | '-' | '+' | '~' | '!' | '--' | '++') ~ right:unary
+    op:('*' | '-' | '+' | '~' | '!' | '--' | '++') right:unary
     ;
 
 postop
     =
-    | left:factor op:('++' | '--') type:`a`
-    | left:factor '[' ~ op:expression ']' type:`b`
+    | left:post_wrap op:('++' | '--') type:`a`
+    | left:post_wrap '[' ~ op:expression ']' type:`b`
     ;
+
+post_wrap
+  =
+  | factor
+  | postop
+  ;
 
 unary
   =
+  | post_wrap
   | unop
-  | postop
-  | factor
   ;
 
 factor
     =
-    | subexpression
     | number
+    | subexpression
     ;
 
 
 subexpression
     =
-    '(' ~ @:expression ')'
+    '(' @:expression ')'
     ;
 
 

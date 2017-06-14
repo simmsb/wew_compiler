@@ -55,7 +55,7 @@ class CalcParser(Parser):
         eol_comments_re=None,
         ignorecase=None,
         left_recursion=True,
-        parseinfo=True,
+        parseinfo=False,
         keywords=None,
         namechars='',
         buffer_class=CalcBuffer,
@@ -180,7 +180,6 @@ class CalcParser(Parser):
                     self._token('++')
                 self._error('expecting one of: ! * + ++ - -- ~')
         self.name_last_node('op')
-        self._cut()
         self._unary_()
         self.name_last_node('right')
         self.ast._define(
@@ -192,7 +191,7 @@ class CalcParser(Parser):
     def _postop_(self):  # noqa
         with self._choice():
             with self._option():
-                self._factor_()
+                self._post_wrap_()
                 self.name_last_node('left')
                 with self._group():
                     with self._choice():
@@ -205,7 +204,7 @@ class CalcParser(Parser):
                 self._constant('a')
                 self.name_last_node('type')
             with self._option():
-                self._factor_()
+                self._post_wrap_()
                 self.name_last_node('left')
                 self._token('[')
                 self._cut()
@@ -221,29 +220,35 @@ class CalcParser(Parser):
         )
 
     @tatsumasu()
+    def _post_wrap_(self):  # noqa
+        with self._choice():
+            with self._option():
+                self._factor_()
+            with self._option():
+                self._postop_()
+            self._error('no available options')
+
+    @tatsumasu()
     def _unary_(self):  # noqa
         with self._choice():
             with self._option():
+                self._post_wrap_()
+            with self._option():
                 self._unop_()
-            with self._option():
-                self._postop_()
-            with self._option():
-                self._factor_()
             self._error('no available options')
 
     @tatsumasu()
     def _factor_(self):  # noqa
         with self._choice():
             with self._option():
-                self._subexpression_()
-            with self._option():
                 self._number_()
+            with self._option():
+                self._subexpression_()
             self._error('no available options')
 
     @tatsumasu()
     def _subexpression_(self):  # noqa
         self._token('(')
-        self._cut()
         self._expression_()
         self.name_last_node('@')
         self._token(')')
@@ -279,6 +284,9 @@ class CalcSemantics(object):
         return ast
 
     def postop(self, ast):  # noqa
+        return ast
+
+    def post_wrap(self, ast):  # noqa
         return ast
 
     def unary(self, ast):  # noqa
