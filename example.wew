@@ -1,5 +1,5 @@
 int main(int that, int * this) {
-  if (1 * 2 + 3 - 4 * 5) {
+  if (1 * 2 + 3 - 4 * 5 | that()) {
     print(this);
   }
 }

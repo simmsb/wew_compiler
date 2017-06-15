@@ -3,6 +3,8 @@
 @@comments::/{~(\n|.)*~}/
 @@eol_comments::/\/\/.*?$/
 
+@@parseinfo::False
+
 start = {function_decl}+ $ ;
 
 types = 'int' ;
@@ -68,104 +70,143 @@ loop_statement
   | type:'do' ~ stat:statement 'while' '(' expr:expression ')' ';'
   ;
 
-expression = assign_expression ;
-
-assign_expression
+expression
   =
-  | ':='>{lor_expression}+
-  | lor_expression
+  | assign
+  | logical
   ;
 
-lor_expression
+assign
   =
-  | '||'>{land_expression}+
-  | land_expression
+  left:logical op:":=" right:expression
   ;
 
-land_expression
+
+logical
   =
-  | '&&'>{or_expression}+
-  | or_expression
+  | bitwise
+  | boolean
+  | comparison
   ;
 
-or_expression
+bitwise
   =
-  | '|'>{xor_expression}+
-  | xor_expression
+  left:comparison op:('|' | '^' | '&') right:logical
   ;
 
-xor_expression
+boolean
   =
-  | '^'>{and_expression}+
-  | and_expression
+  left:comparison op:('||' | '&&') right:logical
   ;
 
-and_expression
+
+comparison
   =
-  | '&'>{equality_expression}+
-  | equality_expression
+  | equality
+  | relation
+  | shift
   ;
 
-equality_expression
+
+equality
   =
-  | ('==' | '!=')>{relative_expression}+
-  | relative_expression
+  left:shift op:('!=' | '==') right:comparison
   ;
 
-relative_expression
+relation
   =
-  | ('>' | '<' | '>=' | '<=')>{shift_expression}+
-  | shift_expression
+  left:shift op:(">=" | '<=' | '>' | '<') right:comparison
   ;
 
-shift_expression
+
+shift
   =
-  | ('<<' | '>>')>{add_expression}+
-  | add_expression
+  | bitshift
+  | bin_expr
   ;
 
-add_expression
+bitshift
   =
-  | ('+' | '-')>{mult_expression}+
-  | mult_expression
+  left:bin_expr op:('<<' | '>>') right:shift
   ;
 
-mult_expression
+
+bin_expr
   =
-  | ('/' | '*')>{unary_expression}+
-  | unary_expression
+  | addition
+  | subtraction
+  | term
   ;
 
-unary_expression
+
+addition
   =
-  | ('*' | '-' | '+' | '~' | '!' | '--' | '++') unary_expression
-  | postfix_expression
+  left:term op:'+' ~ right:bin_expr
   ;
 
-postfix_expression
+
+subtraction
   =
-  | postfix_expression '[' expression ']'
-  | postfix_expression '++'
-  | postfix_expression '--'
-  | function_expression
+  left:term op:'-' ~ right:bin_expr
   ;
 
-function_expression
+
+term
   =
-  | function_expression '(' ','.{expression} ')'
-  | primary_expression
+  | multiplication
+  | division
+  | unary
   ;
 
-primary_expression
+
+multiplication
   =
-  | identifier
+  left:unary op:'*' ~ right:term
+  ;
+
+
+division
+  =
+  left:unary op:'/' ~ right:term
+  ;
+
+unop
+  =
+  op:('*' | '-' | '+' | '~' | '!' | '--' | '++') right:unary
+  ;
+
+postop
+  =
+  | left:post_wrap '(' op:','.{expression} ')' type:`f`
+  | left:post_wrap '[' ~ op:expression ']' type:`b`
+  | left:post_wrap op:('++' | '--') type:`a`
+  ;
+
+post_wrap
+  =
+  | postop
+  | factor
+  ;
+
+unary
+  =
+  | post_wrap
+  | unop
+  ;
+
+factor
+  =
   | literal
-  | '(' ~ @:expression ')'
+  | identifier
+  | subexpression
   ;
 
-integer = /\d+/ ;
-string = /".+"/ ;
-char = /'.'/ ;
+
+subexpression
+  =
+  '(' @:expression ')'
+  ;
+
 
 literal
   =
@@ -174,6 +215,10 @@ literal
   | char
   ;
 
-identifier = /[A-Za-z]\w+/ ;
+integer = /\d+/ ;
+string = /".+"/ ;
+char = /'.'/ ;
+identifier = /[A-Za-z]\w*/ ;
+
 
 # TODO: finish
