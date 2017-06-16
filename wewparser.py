@@ -191,7 +191,7 @@ class WewParser(Parser):
     def _statement_(self):  # noqa
         with self._choice():
             with self._option():
-                self._expression_stmt_()
+                self._scope_()
             with self._option():
                 self._if_statement_()
             with self._option():
@@ -201,17 +201,23 @@ class WewParser(Parser):
             with self._option():
                 self._declaration_()
             with self._option():
-                self._scope_()
+                self._expression_stmt_()
             self._error('no available options')
 
     @tatsumasu()
     def _expression_stmt_(self):  # noqa
         self._expression_()
+        self.name_last_node('expr')
         self._token(';')
+        self.ast._define(
+            ['expr'],
+            []
+        )
 
     @tatsumasu()
     def _return_stmt_(self):  # noqa
         self._token('return')
+        self._cut()
         self._expression_()
         self.name_last_node('expr')
         self._token(';')
@@ -228,7 +234,7 @@ class WewParser(Parser):
         self._expression_()
         self.name_last_node('expr')
         self._token(')')
-        self._statement_()
+        self._scope_()
         self.name_last_node('stat')
         with self._optional():
             self._token('else')
@@ -250,13 +256,13 @@ class WewParser(Parser):
                 self._expression_()
                 self.name_last_node('expr')
                 self._token(')')
-                self._statement_()
+                self._scope_()
                 self.name_last_node('stat')
             with self._option():
                 self._token('do')
                 self.name_last_node('type')
                 self._cut()
-                self._statement_()
+                self._scope_()
                 self.name_last_node('stat')
                 self._token('while')
                 self._token('(')
@@ -617,11 +623,24 @@ class WewParser(Parser):
         with self._choice():
             with self._option():
                 self._integer_()
+                self.name_last_node('val')
+                self._constant('int')
+                self.name_last_node('type')
             with self._option():
                 self._string_()
+                self.name_last_node('val')
+                self._constant('str')
+                self.name_last_node('type')
             with self._option():
                 self._char_()
+                self.name_last_node('val')
+                self._constant('chr')
+                self.name_last_node('type')
             self._error('no available options')
+        self.ast._define(
+            ['type', 'val'],
+            []
+        )
 
     @tatsumasu()
     def _integer_(self):  # noqa

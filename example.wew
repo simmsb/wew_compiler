@@ -1,5 +1,6 @@
 int main(int that, int * this) {
-  if (1 * 2 + 3 - 4 * 5 | that()) {
+  if (1) {
     print(this);
+    while (i < 2) {a := 2;}
   }
 }

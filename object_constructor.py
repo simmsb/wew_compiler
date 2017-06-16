@@ -25,14 +25,14 @@ class ObjectConstructor(object):
     def function_decl(self, ast):  # noqa
         return objects.FunctionDecl(ast)
 
-    def multi_statements(self, ast):  # noqa
+    def scope(self, ast):  # noqa
         return ast
 
     def statement(self, ast):  # noqa
         return ast
 
     def expression_stmt(self, ast):  # noqa
-        return ast
+        return objects.ExpressionStmt(ast)
 
     def return_stmt(self, ast):  # noqa
         return objects.ReturnStmt(ast)
@@ -43,56 +43,76 @@ class ObjectConstructor(object):
     def loop_statement(self, ast):  # noqa
         return objects.LoopStmt(ast)
 
-    def primary_expression(self, ast):  # noqa
-        return ast
-
-    def function_call(self, ast):  # noqa
-        return objects.FuncCall(ast)
-
-    def postfix_expression(self, ast):  # noqa
-        return objects.PostfixOp(ast)
-
-    def unary_expression(self, ast):  # noqa
-        return objects.UnaryOp(ast)
-
-    def un_op(self, ast):  # noqa
-        return ast
-
-    def mult_expression(self, ast):  # noqa
-        return objects.MulExpr(ast)
-
-    def add_expression(self, ast):  # noqa
-        return objects.AddExpr(ast)
-
-    def shift_expression(self, ast):  # noqa
-        return objects.ShiftExpr(ast)
-
-    def relative_expression(self, ast):  # noqa
-        return objects.RelExpr(ast)
-
-    def equality_expression(self, ast):  # noqa
-        return objects.EqExpr(ast)
-
-    def and_expression(self, ast):  # noqa
-        return objects.AndExpr(ast)
-
-    def xor_expression(self, ast):  # noqa
-        return objects.XorExpr(ast)
-
-    def or_expression(self, ast):  # noqa
-        return objects.OrExpr(ast)
-
-    def land_expression(self, ast):  # noqa
-        return objects.LAndExpr(ast)
-
-    def lor_expression(self, ast):  # noqa
-        return objects.LOrExpr(ast)
-
-    def assign_expression(self, ast):  # noqa
-        return objects.AssignExpr(ast)
-
     def expression(self, ast):  # noqa
         return ast
+
+    def assign(self, ast):  # noqa
+        return objects.AssignExpr(ast)
+
+    def logical(self, ast):  # noqa
+        return ast
+
+    def bitwise(self, ast):  # noqa
+        return objects.LogicalBitwise(ast)
+
+    def boolean(self, ast):  # noqa
+        return objects.LogicalBoolean(ast)
+
+    def comparison(self, ast):  # noqa
+        return ast
+
+    def equality(self, ast):  # noqa
+        return objects.EqExpr(ast)
+
+    def relation(self, ast):  # noqa
+        return objects.RelExpr(ast)
+
+    def shift(self, ast):  # noqa
+        return ast
+
+    def bitshift(self, ast):  # noqa
+        return objects.ShiftExpr(ast)
+
+    def bin_expr(self, ast):  # noqa
+        return ast
+
+    def addition(self, ast):  # noqa
+        return objects.AddExpr(ast)
+
+    def subtraction(self, ast):  # noqa
+        return objects.AddExpr(ast)
+
+    def term(self, ast):  # noqa
+        return ast
+
+    def multiplication(self, ast):  # noqa
+        return objects.MulExpr(ast)
+
+    def division(self, ast):  # noqa
+        return objects.MulExpr(ast)
+
+    def unop(self, ast):  # noqa
+        return objects.PreFixOp(ast)
+
+    def postop(self, ast):  # noqa
+        if ast.type == 'f':
+            return objects.FuncCall(ast)
+        return objects.PostFixOp(ast)
+
+    def post_wrap(self, ast):  # noqa
+        return ast
+
+    def unary(self, ast):  # noqa
+        return ast
+
+    def factor(self, ast):  # noqa
+        return ast
+
+    def subexpression(self, ast):  # noqa
+        return ast
+
+    def literal(self, ast):  # noqa
+        return objects.Literal(ast)
 
     def integer(self, ast):  # noqa
         return ast
@@ -102,9 +122,6 @@ class ObjectConstructor(object):
 
     def char(self, ast):  # noqa
         return ast
-
-    def literal(self, ast):  # noqa
-        return objects.Literal(ast)
 
     def identifier(self, ast):  # noqa
         return objects.Identifier(ast)
