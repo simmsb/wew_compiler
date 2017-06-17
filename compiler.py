@@ -1,5 +1,6 @@
 """Compiler."""
 from ast_formatter import format_ast
+from compile_context import CompileContext
 from object_constructor import ObjectConstructor
 from wewparser import WewParser
 
@@ -16,5 +17,9 @@ if __name__ == '__main__':
     with open(sys.argv[1]) as f:
         text = f.read()
     ast = parse_with_semantics(text, ObjectConstructor)
+
+    context = CompileContext()
+
     for i in ast:
         print(format_ast(str(i)))
+        context.insert_function(i)

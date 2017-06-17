@@ -90,22 +90,18 @@ class WewParser(Parser):
         self._token('int')
 
     @tatsumasu()
-    def _pointer_(self):  # noqa
-
-        def block0():
-            self._token('*')
-            self.add_last_node_to_name('@')
-        self._positive_closure(block0)
-
-    @tatsumasu()
     def _instance_types_(self):  # noqa
-        with self._choice():
-            with self._option():
-                self._types_()
-                self._pointer_()
-            with self._option():
-                self._types_()
-            self._error('no available options')
+        self._types_()
+        self.name_last_node('t')
+
+        def block2():
+            self._token('*')
+        self._closure(block2)
+        self.name_last_node('p')
+        self.ast._define(
+            ['p', 't'],
+            []
+        )
 
     @tatsumasu()
     def _typed_variable_(self):  # noqa
@@ -122,17 +118,15 @@ class WewParser(Parser):
     def _declaration_(self):  # noqa
         with self._choice():
             with self._option():
-                self._types_()
+                self._instance_types_()
                 self.name_last_node('type')
-                self._pointer_()
-                self.name_last_node('pt')
                 self._identifier_()
                 self.name_last_node('name')
                 self._token(';')
-                self._constant('pointer')
+                self._constant('ident')
                 self.name_last_node('ref')
             with self._option():
-                self._types_()
+                self._instance_types_()
                 self.name_last_node('type')
                 self._identifier_()
                 self.name_last_node('name')
@@ -143,11 +137,6 @@ class WewParser(Parser):
                 self._token(';')
                 self._constant('list')
                 self.name_last_node('ref')
-            with self._option():
-                self._types_()
-                self.name_last_node('type')
-                self._identifier_()
-                self.name_last_node('name')
             self._error('no available options')
         self.ast._define(
             ['name', 'pt', 'ref', 'type'],
@@ -664,9 +653,6 @@ class WewSemantics(object):
         return ast
 
     def types(self, ast):  # noqa
-        return ast
-
-    def pointer(self, ast):  # noqa
         return ast
 
     def instance_types(self, ast):  # noqa

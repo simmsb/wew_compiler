@@ -1,4 +1,4 @@
-int main(int that, int * this) {
+int *main(int that, int *** this) {
   if (1) {
     print(this);
     while (i < 2) {a := 2;}

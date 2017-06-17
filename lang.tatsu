@@ -9,12 +9,9 @@ start = {function_decl}+ $ ;
 
 types = 'int' ;
 
-pointer = {@+:'*'}+ ;
-
 instance_types
   =
-  | types pointer
-  | types
+  t:types p:{ '*' }
   ;
 
 typed_variable
@@ -24,9 +21,8 @@ typed_variable
 
 declaration
   =
-  | type:types pt:pointer name:identifier ';' ref:`pointer`
-  | type:types name:identifier '[' pt:integer ']' ';' ref:`list`
-  | type:types name:identifier
+  | type:instance_types name:identifier ';' ref:`ident`
+  | type:instance_types name:identifier '[' pt:integer ']' ';' ref:`list`
   ;
 
 function_decl

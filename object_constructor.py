@@ -14,7 +14,7 @@ class ObjectConstructor(object):
         return ast
 
     def instance_types(self, ast):  # noqa
-        return ast
+        return objects.parse_type(ast)
 
     def typed_variable(self, ast):  # noqa
         return objects.TypedVariable(ast)
