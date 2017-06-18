@@ -1,4 +1,6 @@
-class PostFixOp:
+from .compiler_objects import Compilable
+
+class PostFixOp(Compilable):
 
     def __init__(self, ast):
         self.expr = ast.left
@@ -7,23 +9,9 @@ class PostFixOp:
 
     def __str__(self):
         return f"<{self.__class__.__name__}: <OP: {self.op}> <EXPR: {self.expr}> <TYPE: {self.type}>>"
+        
 
-
-class FunctionCall:
-
-    def __init__(self, ast):
-        self.expr = ast.left
-        self.op = ast.op
-        self.type = ast.type
-
-    def __str__(self):
-        return "<{0.__class__.__name__}: <OP: {1}> <EXPR: {0.expr}> <TYPE: {0.type}>>".format(
-            self,
-            ", ".join(map(str, self.op))
-        )
-
-
-class PreFixOp:
+class PreFixOp(Compilable):
 
     def __init__(self, ast):
         self.expr = ast.right
@@ -33,7 +21,7 @@ class PreFixOp:
         return f"<{self.__class__.__name__}: <OP: {self.op}> <EXPR: {self.expr}>>"
 
 
-class DuoOp:
+class DuoOp(Compilable):
 
     def __init__(self, ast):
         self.left = ast.left
@@ -86,7 +74,7 @@ class AssignExpr(DuoOp):
     ...
 
 
-class FuncCall:
+class FuncCall(Compilable):
 
     def __init__(self, ast):
         self.name = ast.name

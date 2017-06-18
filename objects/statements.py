@@ -1,4 +1,6 @@
-class ReturnStmt:
+from .compiler_objects import Compilable
+
+class ReturnStmt(Compilable):
 
     def __init__(self, ast):
         self.expr = ast.expr
@@ -7,7 +9,7 @@ class ReturnStmt:
         return f"<RETURN: <EXPR: {self.expr}>>"
 
 
-class IfStmt:
+class IfStmt(Compilable):
 
     def __init__(self, ast):
         self.expr = ast.expr
@@ -20,7 +22,7 @@ class IfStmt:
         )
 
 
-class LoopStmt:
+class LoopStmt(Compilable):
 
     def __init__(self, ast):
         self.type = ast.type
@@ -33,7 +35,7 @@ class LoopStmt:
         )
 
 
-class ExpressionStmt:
+class ExpressionStmt(Compilable):
 
     def __init__(self, ast):
         self.expr = ast.expr

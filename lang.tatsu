@@ -21,8 +21,8 @@ typed_variable
 
 declaration
   =
-  | type:instance_types name:identifier ';' ref:`ident`
-  | type:instance_types name:identifier '[' pt:integer ']' ';' ref:`list`
+  | type:instance_types name:identifier [':=' pt:expression ] ';' ref:`ident`
+  | type:instance_types name:identifier '[' pt:expression ']' ';' ref:`list`
   ;
 
 function_decl
