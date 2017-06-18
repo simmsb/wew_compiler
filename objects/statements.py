@@ -1,5 +1,6 @@
 from .compiler_objects import Compilable
 
+
 class ReturnStmt(Compilable):
 
     def __init__(self, ast):
@@ -7,6 +8,9 @@ class ReturnStmt(Compilable):
 
     def __str__(self):
         return f"<RETURN: <EXPR: {self.expr}>>"
+
+    def compile(self, ctx):
+        return NotImplemented
 
 
 class IfStmt(Compilable):
@@ -21,6 +25,9 @@ class IfStmt(Compilable):
             self, ", ".join(map(str, self.statements))
         )
 
+    def compile(self, ctx):
+        return NotImplemented
+
 
 class LoopStmt(Compilable):
 
@@ -34,6 +41,9 @@ class LoopStmt(Compilable):
             self, ", ".join(map(str, self.statements))
         )
 
+    def compile(self, ctx):
+        return NotImplemented
+
 
 class ExpressionStmt(Compilable):
 
@@ -42,3 +52,6 @@ class ExpressionStmt(Compilable):
 
     def __str__(self):
         return f"<EXPRESSION STMT: {self.expr}>"
+
+    def compile(self, ctx):
+        return NotImplemented

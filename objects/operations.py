@@ -1,5 +1,6 @@
 from .compiler_objects import Compilable
 
+
 class PostFixOp(Compilable):
 
     def __init__(self, ast):
@@ -9,7 +10,10 @@ class PostFixOp(Compilable):
 
     def __str__(self):
         return f"<{self.__class__.__name__}: <OP: {self.op}> <EXPR: {self.expr}> <TYPE: {self.type}>>"
-        
+
+    def compile(self, ctx):
+        return NotImplemented
+
 
 class PreFixOp(Compilable):
 
@@ -19,6 +23,9 @@ class PreFixOp(Compilable):
 
     def __str__(self):
         return f"<{self.__class__.__name__}: <OP: {self.op}> <EXPR: {self.expr}>>"
+
+    def compile(self, ctx):
+        return NotImplemented
 
 
 class DuoOp(Compilable):
@@ -30,6 +37,9 @@ class DuoOp(Compilable):
 
     def __str__(self):
         return f"<{self.__class__.__name__}: <LEFT: {self.left}> <OP: {self.op}> <RIGHT: {self.right}>>"
+
+    def compile(self, ctx):
+        return NotImplemented
 
 
 class MulExpr(DuoOp):
@@ -84,3 +94,6 @@ class FuncCall(Compilable):
         return "<FUNCTION_CALL: <NAME: {0.name}> <VARS: {1}>>".format(
             self, ", ".join(str(i) for i in self.vars)
         )
+
+    def compile(self, ctx):
+        return NotImplemented
