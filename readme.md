@@ -18,8 +18,10 @@ int *main(int that, int *** this) {
     while (i < 2) {a := 2;}
   } else {
 	*b := dothis(1*2, that(4+test, else));
+	(*(wew+3))(this, 3);
   }
 }
+
 
 ```
 
@@ -59,7 +61,9 @@ is parsed into:
           <SCOPE:
             <EXPRESSION STMT:
               <FUNCTION_CALL:
-                <NAME: None>
+                <NAME:
+                  <IDENTIFIER:
+                    <NAME: print>>>
                 <VARS:
                   <IDENTIFIER:
                     <NAME: this>>>>>
@@ -100,7 +104,9 @@ is parsed into:
                 <OP: :=>
                 <RIGHT:
                   <FUNCTION_CALL:
-                    <NAME: None>
+                    <NAME:
+                      <IDENTIFIER:
+                        <NAME: dothis>>>
                     <VARS:
                       <MulExpr:
                         <LEFT:
@@ -113,7 +119,9 @@ is parsed into:
                             <VALUE: 2>
                             <TYPE: int>>>>
                       <FUNCTION_CALL:
-                        <NAME: None>
+                        <NAME:
+                          <IDENTIFIER:
+                            <NAME: that>>>
                         <VARS:
                           <AddExpr:
                             <LEFT:
@@ -125,5 +133,26 @@ is parsed into:
                               <IDENTIFIER:
                                 <NAME: test>>>>
                           <IDENTIFIER:
-                            <NAME: else>>>>>>>>>>>>>>
+                            <NAME: else>>>>>>>>>
+            <EXPRESSION STMT:
+              <FUNCTION_CALL:
+                <NAME:
+                  <PreFixOp:
+                    <OP: *>
+                    <EXPR:
+                      <AddExpr:
+                        <LEFT:
+                          <IDENTIFIER:
+                            <NAME: wew>>>
+                        <OP: +>
+                        <RIGHT:
+                          <LITERAL:
+                            <VALUE: 3>
+                            <TYPE: int>>>>>>>
+                <VARS:
+                  <IDENTIFIER:
+                    <NAME: this>>
+                  <LITERAL:
+                    <VALUE: 3>
+                    <TYPE: int>>>>>>>>>>
 ```

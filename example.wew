@@ -4,5 +4,6 @@ int *main(int that, int *** this) {
     while (i < 2) {a := 2;}
   } else {
 	*b := dothis(1*2, that(4+test, else));
+	(*(wew+3))(this, 3);
   }
 }

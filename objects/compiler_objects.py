@@ -14,7 +14,6 @@ class LineReference:
     """Grabs line reference from ast."""
 
     def __init__(self, ast):
-        print(ast)
         self.line = ast.parseinfo.line
 
 

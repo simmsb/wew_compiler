@@ -91,7 +91,7 @@ class FuncCall(LineReference, Compilable):
 
     def __init__(self, ast):
         super().__init__(ast)
-        self.name = ast.name
+        self.name = ast.left
         self.vars = ast.op
 
     def __str__(self):
