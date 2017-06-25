@@ -1,6 +1,3 @@
-from functools import reduce
-
-
 class Int:
     size = 1
 
@@ -24,6 +21,7 @@ class Pointer:
 
 
 def parse(typ):
+    """Parse pointer types into POINTER TO <>."""
     match = {"int": Int,
              "float": Float}[typ.t]()
     for _ in typ.p:
