@@ -16,110 +16,114 @@ int *main(int that, int *** this) {
   if (1) {
     print(this);
     while (i < 2) {a := 2;}
+  } else {
+	*b := dothis(1*2, that(4+test, else));
   }
 }
+
 ```
 
 is parsed into:
 ```
 <FUNCTION:
-   <return:
-      <POINTER to
-         <INTEGER>
-      >
-   >
-   <name:
-      <IDENTIFIER:
-         <NAME: main>
-      >
-   >
-   <params:
-      <PARAM VARIABLE
-         <NAME:
-            <IDENTIFIER:
-               <NAME: that>
-            >
-         >
-         <TYPE:
-            <INTEGER>
-         >
-      >,
-      <PARAM VARIABLE
-         <NAME:
-            <IDENTIFIER:
-               <NAME: this>
-            >
-         >
-         <TYPE:
+  <return:
+    <POINTER to
+      <INTEGER>>>
+  <name:
+    <IDENTIFIER:
+      <NAME: main>>>
+  <params:
+    <PARAM VARIABLE
+      <NAME:
+        <IDENTIFIER:
+          <NAME: that>>>
+      <TYPE:
+        <INTEGER>>>
+    <PARAM VARIABLE
+      <NAME:
+        <IDENTIFIER:
+          <NAME: this>>>
+      <TYPE:
+        <POINTER to
+          <POINTER to
             <POINTER to
-               <POINTER to
-                  <POINTER to
-                     <INTEGER>
-                  >
-               >
-            >
-         >
-      >
-   >
-   <code:
+              <INTEGER>>>>>>>
+  <code:
+    <SCOPE:
       <IF STATEMENT:
-         <EXPR
-            <LITERAL:
-               <VALUE: 1>
-               <TYPE: int>
-            >
-         >
-         <STATEMENTS:
+        <EXPR
+          <LITERAL:
+            <VALUE: 1>
+            <TYPE: int>>>
+        <STATEMENTS:
+          <SCOPE:
             <EXPRESSION STMT:
-               <FUNCTION_CALL:
-                  <NAME: None>
-                  <VARS:
-                     <IDENTIFIER:
-                        <NAME: this>
-                     >
-                  >
-               >
-            >,
+              <FUNCTION_CALL:
+                <NAME: None>
+                <VARS:
+                  <IDENTIFIER:
+                    <NAME: this>>>>>
             <LOOP:
-               <TYPE: while>
-               <EXPR:
-                  <RelExpr:
-                     <LEFT:
-                        <IDENTIFIER:
-                           <NAME: i>
-                        >
-                     >
-                     <OP: le>
-                     <RIGHT:
-                        <LITERAL:
-                           <VALUE: 2>
-                           <TYPE: int>
-                        >
-                     >
-                  >
-               >
-               <STATEMENTS:
+              <TYPE: while>
+              <EXPR:
+                <RelExpr:
+                  <LEFT:
+                    <IDENTIFIER:
+                      <NAME: i>>>
+                  <OP: le>
+                  <RIGHT:
+                    <LITERAL:
+                      <VALUE: 2>
+                      <TYPE: int>>>>>
+              <STATEMENTS:
+                <SCOPE:
                   <EXPRESSION STMT:
-                     <AssignExpr:
+                    <AssignExpr:
+                      <LEFT:
+                        <IDENTIFIER:
+                          <NAME: a>>>
+                      <OP: :=>
+                      <RIGHT:
+                        <LITERAL:
+                          <VALUE: 2>
+                          <TYPE: int>>>>>>>>>>
+        <ELSE:
+          <SCOPE:
+            <EXPRESSION STMT:
+              <AssignExpr:
+                <LEFT:
+                  <PreFixOp:
+                    <OP: *>
+                    <EXPR:
+                      <IDENTIFIER:
+                        <NAME: b>>>>>
+                <OP: :=>
+                <RIGHT:
+                  <FUNCTION_CALL:
+                    <NAME: None>
+                    <VARS:
+                      <MulExpr:
                         <LEFT:
-                           <IDENTIFIER:
-                              <NAME: a>
-                           >
-                        >
-                        <OP: :=>
+                          <LITERAL:
+                            <VALUE: 1>
+                            <TYPE: int>>>
+                        <OP: *>
                         <RIGHT:
-                           <LITERAL:
-                              <VALUE: 2>
-                              <TYPE: int>
-                           >
-                        >
-                     >
-                  >
-               >
-            >
-         >
-         <ELSE: None>
-      >
-   >
->
+                          <LITERAL:
+                            <VALUE: 2>
+                            <TYPE: int>>>>
+                      <FUNCTION_CALL:
+                        <NAME: None>
+                        <VARS:
+                          <AddExpr:
+                            <LEFT:
+                              <LITERAL:
+                                <VALUE: 4>
+                                <TYPE: int>>>
+                            <OP: +>
+                            <RIGHT:
+                              <IDENTIFIER:
+                                <NAME: test>>>>
+                          <IDENTIFIER:
+                            <NAME: else>>>>>>>>>>>>>>
 ```

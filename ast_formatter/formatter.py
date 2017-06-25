@@ -1,17 +1,18 @@
-def format_ast(string, indent=0):
-    blocks = []
+def format_ast(string, indent=2):
+    """Format a ast with specified indentation per block."""
+    blocks = ""
     brackets = -1
-    for c, i in enumerate(string):
-        if i == "<":
+
+    while string:
+        char, string = string[0], string[1:]
+        if char == "<":
             brackets += 1
-            blocks.append("\n{}".format("   " * brackets))
-            blocks.append(i)
-        elif i == ">":
-            blocks.append(i)
-            brackets -= 1
-            if c + 1 < len(string):
-                if string[c + 1] == ">":
-                    blocks.append("\n{}".format("   " * brackets))
+            blocks += "\n" + " " * indent * brackets + "<"
+        elif char == ">":
+            while char == ">" and string:
+                char, string = string[0], string[1:]
+                brackets -= 1
+                blocks += ">"
         else:
-            blocks.append(i)
-    return "".join(blocks)
+            blocks += char
+    return blocks

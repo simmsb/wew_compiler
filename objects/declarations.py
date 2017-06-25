@@ -58,7 +58,7 @@ class Scope(Scoped, Compilable):
         return f"{self.parent.name} -> scope:{self.line}"
 
     def __str__(self):
-        return "<SCOPE: <" + ", ".join(map(str, self.code)) + ">>"
+        return "<SCOPE: " + ", ".join(map(str, self.code)) + ">"
 
 
 class Variable(LineReference):

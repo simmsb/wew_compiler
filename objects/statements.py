@@ -20,7 +20,7 @@ class IfStmt(LineReference, Compilable):
         super().__init__(ast)
         self.expr = ast.expr
         self.statements = ast.stat
-        self.else_ = ast.get("else")
+        self.else_ = ast.get("else_")
 
     def __str__(self):
         return "<IF STATEMENT: <EXPR {0.expr}> <STATEMENTS: {1}> <ELSE: {0.else_}>>".format(
