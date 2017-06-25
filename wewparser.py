@@ -19,7 +19,7 @@ from tatsu.parsing import tatsumasu
 from tatsu.util import re, generic_main  # noqa
 
 
-KEYWORDS = {}
+KEYWORDS = {}  # type: ignore
 
 
 class WewBuffer(Buffer):
@@ -55,7 +55,7 @@ class WewParser(Parser):
         eol_comments_re='\\/\\/.*?$',
         ignorecase=None,
         left_recursion=True,
-        parseinfo=False,
+        parseinfo=True,
         keywords=None,
         namechars='',
         buffer_class=WewBuffer,
@@ -174,11 +174,15 @@ class WewParser(Parser):
     def _scope_(self):  # noqa
         self._token('{')
 
-        def block0():
+        def block1():
             self._statement_()
-            self.add_last_node_to_name('@')
-        self._closure(block0)
+        self._closure(block1)
+        self.name_last_node('code')
         self._token('}')
+        self.ast._define(
+            ['code'],
+            []
+        )
 
     @tatsumasu()
     def _statement_(self):  # noqa
@@ -314,7 +318,7 @@ class WewParser(Parser):
                     self._token('^')
                 with self._option():
                     self._token('&')
-                self._error('expecting one of: & ^ |')
+                self._error('no available options')
         self.name_last_node('op')
         self._logical_()
         self.name_last_node('right')
@@ -333,7 +337,7 @@ class WewParser(Parser):
                     self._token('||')
                 with self._option():
                     self._token('&&')
-                self._error('expecting one of: && ||')
+                self._error('no available options')
         self.name_last_node('op')
         self._logical_()
         self.name_last_node('right')
@@ -363,7 +367,7 @@ class WewParser(Parser):
                     self._token('!=')
                 with self._option():
                     self._token('==')
-                self._error('expecting one of: != ==')
+                self._error('no available options')
         self.name_last_node('op')
         self._comparison_()
         self.name_last_node('right')
@@ -386,7 +390,7 @@ class WewParser(Parser):
                     self._token('>')
                 with self._option():
                     self._token('<')
-                self._error('expecting one of: < <= > >=')
+                self._error('no available options')
         self.name_last_node('op')
         self._comparison_()
         self.name_last_node('right')
@@ -414,7 +418,7 @@ class WewParser(Parser):
                     self._token('<<')
                 with self._option():
                     self._token('>>')
-                self._error('expecting one of: << >>')
+                self._error('no available options')
         self.name_last_node('op')
         self._shift_()
         self.name_last_node('right')
@@ -519,7 +523,7 @@ class WewParser(Parser):
                     self._token('--')
                 with self._option():
                     self._token('++')
-                self._error('expecting one of: ! * + ++ - -- ~')
+                self._error('no available options')
         self.name_last_node('op')
         self._unary_()
         self.name_last_node('right')
@@ -565,7 +569,7 @@ class WewParser(Parser):
                             self._token('++')
                         with self._option():
                             self._token('--')
-                        self._error('expecting one of: ++ --')
+                        self._error('no available options')
                 self.name_last_node('op')
                 self._constant('a')
                 self.name_last_node('type')
@@ -650,6 +654,11 @@ class WewParser(Parser):
     @tatsumasu()
     def _identifier_(self):  # noqa
         self._pattern(r'[A-Za-z]\w*')
+        self.name_last_node('name')
+        self.ast._define(
+            ['name'],
+            []
+        )
 
 
 class WewSemantics(object):

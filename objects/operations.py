@@ -1,9 +1,10 @@
-from .compiler_objects import Compilable
+from .compiler_objects import Compilable, LineReference
 
 
-class PostFixOp(Compilable):
+class PostFixOp(LineReference, Compilable):
 
     def __init__(self, ast):
+        super().__init__(ast)
         self.expr = ast.left
         self.op = ast.op
         self.type = ast.type
@@ -15,9 +16,10 @@ class PostFixOp(Compilable):
         return NotImplemented
 
 
-class PreFixOp(Compilable):
+class PreFixOp(LineReference, Compilable):
 
     def __init__(self, ast):
+        super().__init__(ast)
         self.expr = ast.right
         self.op = ast.op
 
@@ -28,9 +30,10 @@ class PreFixOp(Compilable):
         return NotImplemented
 
 
-class DuoOp(Compilable):
+class DuoOp(LineReference, Compilable):
 
     def __init__(self, ast):
+        super().__init__(ast)
         self.left = ast.left
         self.right = ast.right
         self.op = ast.op
@@ -84,9 +87,10 @@ class AssignExpr(DuoOp):
     ...
 
 
-class FuncCall(Compilable):
+class FuncCall(LineReference, Compilable):
 
     def __init__(self, ast):
+        super().__init__(ast)
         self.name = ast.name
         self.vars = ast.op
 

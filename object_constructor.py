@@ -26,7 +26,7 @@ class ObjectConstructor(object):
         return objects.FunctionDecl(ast)
 
     def scope(self, ast):  # noqa
-        return ast
+        return objects.Scope(ast)
 
     def statement(self, ast):  # noqa
         return ast
