@@ -21,11 +21,7 @@ class Pointer:
 
 
 def parse(typ):
-<<<<<<< HEAD
     """Parse pointer types into POINTER TO <>."""
-=======
-    """Parse pointer types into POINTER TO <>"""
->>>>>>> d83d4a16a290ffed8364345cdb9c75f0be2d33e5
     match = {"int": Int,
              "float": Float}[typ.t]()
     for _ in typ.p:
