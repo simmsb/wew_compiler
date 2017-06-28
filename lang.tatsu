@@ -168,7 +168,7 @@ division
 
 unop
   =
-  op:('*' | '-' | '+' | '~' | '!' | '--' | '++') right:unary
+  op:('*' | '--' | '++' | '~' | '!' | '-' | '+') right:unary
   ;
 
 postop

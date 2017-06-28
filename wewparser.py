@@ -19,7 +19,7 @@ from tatsu.parsing import tatsumasu
 from tatsu.util import re, generic_main  # noqa
 
 
-KEYWORDS = {}  # type: ignore
+KEYWORDS = {}
 
 
 class WewBuffer(Buffer):
@@ -318,7 +318,7 @@ class WewParser(Parser):
                     self._token('^')
                 with self._option():
                     self._token('&')
-                self._error('no available options')
+                self._error('expecting one of: & ^ |')
         self.name_last_node('op')
         self._logical_()
         self.name_last_node('right')
@@ -337,7 +337,7 @@ class WewParser(Parser):
                     self._token('||')
                 with self._option():
                     self._token('&&')
-                self._error('no available options')
+                self._error('expecting one of: && ||')
         self.name_last_node('op')
         self._logical_()
         self.name_last_node('right')
@@ -367,7 +367,7 @@ class WewParser(Parser):
                     self._token('!=')
                 with self._option():
                     self._token('==')
-                self._error('no available options')
+                self._error('expecting one of: != ==')
         self.name_last_node('op')
         self._comparison_()
         self.name_last_node('right')
@@ -390,7 +390,7 @@ class WewParser(Parser):
                     self._token('>')
                 with self._option():
                     self._token('<')
-                self._error('no available options')
+                self._error('expecting one of: < <= > >=')
         self.name_last_node('op')
         self._comparison_()
         self.name_last_node('right')
@@ -418,7 +418,7 @@ class WewParser(Parser):
                     self._token('<<')
                 with self._option():
                     self._token('>>')
-                self._error('no available options')
+                self._error('expecting one of: << >>')
         self.name_last_node('op')
         self._shift_()
         self.name_last_node('right')
@@ -512,18 +512,18 @@ class WewParser(Parser):
                 with self._option():
                     self._token('*')
                 with self._option():
-                    self._token('-')
+                    self._token('--')
                 with self._option():
-                    self._token('+')
+                    self._token('++')
                 with self._option():
                     self._token('~')
                 with self._option():
                     self._token('!')
                 with self._option():
-                    self._token('--')
+                    self._token('-')
                 with self._option():
-                    self._token('++')
-                self._error('no available options')
+                    self._token('+')
+                self._error('expecting one of: ! * + ++ - -- ~')
         self.name_last_node('op')
         self._unary_()
         self.name_last_node('right')
@@ -569,7 +569,7 @@ class WewParser(Parser):
                             self._token('++')
                         with self._option():
                             self._token('--')
-                        self._error('no available options')
+                        self._error('expecting one of: ++ --')
                 self.name_last_node('op')
                 self._constant('a')
                 self.name_last_node('type')
