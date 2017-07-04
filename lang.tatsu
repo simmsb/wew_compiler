@@ -22,7 +22,7 @@ typed_variable
 declaration
   =
   | type:instance_types name:identifier [':=' pt:expression ] ';' ref:`ident`
-  | type:instance_types name:identifier '[' pt:expression ']' ';' ref:`list`
+  | type:instance_types name:identifier '[' pt:integer ']' ';' ref:`list`
   ;
 
 function_decl

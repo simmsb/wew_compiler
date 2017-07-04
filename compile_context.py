@@ -29,7 +29,7 @@ class CompileContext:
         for i in reversed(self.scope_chain):
             var = i.lookup_variable(self, variable)
             if var is not None:
-                return VariableReference(var.name, var.type, i)
+                return VariableReference(var, var.name, var.type, i)
 
         raise CompileException(callee.line,
                                f"Variable <{variable}> is not declared in the scope: "

@@ -23,7 +23,8 @@ class VariableReference:
     contains info on scope for reslolving position at later stage
     """
 
-    def __init__(self, name, type_, parent):
+    def __init__(self, var, name, type_, parent):
+        self.var = var
         self.name = name
         self.type = type_
         self.parent = parent

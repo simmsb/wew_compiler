@@ -135,7 +135,7 @@ class WewParser(Parser):
                 self._identifier_()
                 self.name_last_node('name')
                 self._token('[')
-                self._expression_()
+                self._integer_()
                 self.name_last_node('pt')
                 self._token(']')
                 self._token(';')

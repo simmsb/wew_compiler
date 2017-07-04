@@ -1,4 +1,5 @@
 import types
+from .emitters import emit, Register
 
 from .compiler_objects import Compilable, CompileException, LineReference
 
@@ -7,17 +8,21 @@ class Scoped(LineReference):
     def __init__(self, ast, scope: dict):
         super().__init__(ast)
         self.scope = scope
+        self.offset = 0
+        self.size = 0
 
-    def lookup_variable(self, ctx, variable):
+    def lookup_variable(self, ctx: 'context', variable: str):
         return self.scope.get(variable)
 
-    def declare_variable(self, ctx, variable):
+    def declare_variable(self, ctx: 'context', variable):
         """Add variable to scope."""
         if variable.name in self.scope:
             raise CompileException(variable.line, f"Variable <{variable}> is already declared in the scope: "
                                    + ctx.current_scope.name)
+        offset = self.offset + self.size  #self.size is current
         self.scope[variable.name] = variable
-
+        variable.stack_offset = offset
+        self.size += variable.size
 
 class FunctionDecl(Scoped, Compilable):
 
@@ -50,6 +55,7 @@ class Scope(Scoped, Compilable):
 
     def compile(self, ctx):
         self.parent = ctx.current_function[-1]
+        self.offset = self.parent.offset + self.parent.size
         # save the parent scope
         yield from (i.compile(ctx) for i in self.code)
 
@@ -67,6 +73,8 @@ class Variable(LineReference):
         super().__init__(ast)
         self.type = ast.type
         self.name = ast.name
+        self.stack_offset = 0
+        self.size = 1
 
 
 class TypedVariable(Variable):
@@ -87,9 +95,15 @@ class DeclaredVariable(Variable, Compilable):
         if self.ref == 'list':
             self.type = types.Pointer(self.type)
             # Wrap in a pointer for list declaration
+            self.size = pt.value
 
     def __str__(self):
         return (f"<DECLVAR: <TYPE: {self.type}> <NAME: {self.name}> <pt: {self.pt}>>")
 
     def compile(self, ctx):
         ctx.current_scope.declare_variable(ctx, self)
+        yield from emit.sub(Register.esp, self.size)
+        yield from emit.mov(Register.esp, Register.acc)
+        if self.ref == "ident":
+            yield from emit.mov(ctx.lookup_variable(self.name, self), Register.aaa)
+            # go back to ctx here so we dont generate the var ref ourself
