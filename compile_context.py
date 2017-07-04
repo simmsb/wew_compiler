@@ -7,6 +7,8 @@ class CompileContext:
     def __init__(self):
         self.functions = {}
         self.scope_chain = []
+        self.strings = []
+        self.string_len = 0
 
     def insert_function(self, function):
         if function.name in self.functions:
