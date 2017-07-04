@@ -28,7 +28,7 @@ def instruction_helper(instr, n_args):
         if len(args) != n_args:
             raise Exception(f"Instruction {instr} expects {n_args} but "
                             f"{len(args)} were given.")
-        yield from AbstractInstruction(instr, args).emit()
+        return AbstractInstruction(instr, args).emit()
 
 #
 #  if int, dereference
@@ -41,21 +41,10 @@ class AbstractInstruction:
     def __init__(self, instr, args):
         self.instr = instr
         self.args = args
-        self.pre_instructions = []
-        self.to_use = [Register.ggg, Register.fff]
 
     def resolve_arg(self, arg):
         if isinstance(i, int):
             return i
-        if isinstance(i, VariableReference):
-            reg_used = self.to_use.pop()
-            pre = [
-                Instruction(ops2.sub, Register.epb, i.var.size),
-                Instruction(ops2.mov, reg_used, Register.acc)
-            ]
-
-            self.pre_instructions += pre
-            return pack_address(reg_used, is_deref=True, is_reg=True)
 
         if isinstance(i, list):  # dereference, child will
             pre, _ = self.resolve_arg(i[0])
@@ -67,8 +56,7 @@ class AbstractInstruction:
 
     def emit(self):
         args = [self.resolve_arg(i) for i in self.args]
-        yield from self.pre_instructions
-        yield Instruction(self.instr, *args)
+        return Instruction(self.instr, *args)
 
- 
+
 emit = Emitter()

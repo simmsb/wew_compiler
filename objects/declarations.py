@@ -24,6 +24,10 @@ class Scoped(LineReference):
         variable.stack_offset = offset
         self.size += variable.size
 
+    def compile(self, ctx):
+        """Used to bump up esp over the stack variables declared in this scope"""
+        yield emit.add(Register.esp, self.size)
+
 class FunctionDecl(Scoped, Compilable):
 
     def __init__(self, ast):
@@ -45,7 +49,7 @@ class FunctionDecl(Scoped, Compilable):
         for i in self.params:
             self.declare_variable(ctx, i)
         yield from (i.compile(ctx) for i in self.code)
-
+        yield from super().compile(ctx)
 
 class Scope(Scoped, Compilable):
 
@@ -59,6 +63,7 @@ class Scope(Scoped, Compilable):
         self.offset = self.parent.offset + self.parent.size
         # save the parent scope
         yield from (i.compile(ctx) for i in self.code)
+        yield from super().compile(ctx)
 
     @property
     def name(self):

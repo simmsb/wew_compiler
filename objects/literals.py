@@ -1,7 +1,7 @@
-from .compiler_objects import LineReference
-from .emitters import emit
+from .compiler_objects import LineReference, Compilable
+from .emitters import emit, Register
 
-class Literal(LineReference):
+class Literal(LineReference, Compilable):
 
     is_lvalue = False
 
@@ -12,6 +12,16 @@ class Literal(LineReference):
 
     def __str__(self):
         return f"<LITERAL: <VALUE: {self.value}> <TYPE: {self.type}>>"
+
+    def compile(self, ctx):
+        if self.type == "int":
+            yield emit.mov(Register.acc, self.value)
+        elif self.type == "str":
+            yield emit.mov(Register.acc, ctx.string_len)
+            ctx.strings.append(self.value)  # add string to context (to be included in the binary later)
+            ctx.string_len += len(self.value)
+        elif self.type == 'chr':
+            yield emit.mov(Register.acc, ord(self.value))
 
 
 class Identifier(LineReference):
@@ -29,3 +39,7 @@ class Identifier(LineReference):
 
     def __str__(self):
         return f"<IDENTIFIER: <NAME: {self.name}>>"
+
+    def compile(self, ctx):
+        yield from self.load_lvalue(Register.acc, ctx)
+        yield emit.mov(Register.acc, [Register.acc])
