@@ -29,6 +29,9 @@ class VariableReference:
         self.type = type_
         self.parent = parent
 
+    @property
+    def stack_offset(self):
+        return self.var.stack_offset
 
 class CompileException(Exception):
     def __init__(self, line, *args, **kwargs):

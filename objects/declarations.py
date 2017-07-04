@@ -31,8 +31,7 @@ class FunctionDecl(Scoped, Compilable):
         self.name = ast.name
         self.params = ast.params
         self.code = ast.stat  # this is a scope object now
-
-        super().__init__(ast, {i.name: i for i in self.params})
+        super().__init__(ast, {})
         # scope holding variables, prefill with parameters
 
         # we might decide to build calling conventions
@@ -43,6 +42,8 @@ class FunctionDecl(Scoped, Compilable):
         )
 
     def compile(self, ctx):
+        for i in self.params:
+            self.declare_variable(ctx, i)
         yield from (i.compile(ctx) for i in self.code)
 
 
@@ -79,6 +80,13 @@ class Variable(LineReference):
 
 class TypedVariable(Variable):
 
+    size = 1
+    is_lvalue = True
+
+    def load_lvalue(self, register, ctx):
+        yield emit.add(Register.epb, self.stack_offset)
+        yield emit.mov(register, Register.acc)
+
     def __init__(self, ast):
         super().__init__(ast)
 
@@ -102,8 +110,11 @@ class DeclaredVariable(Variable, Compilable):
 
     def compile(self, ctx):
         ctx.current_scope.declare_variable(ctx, self)
-        yield from emit.sub(Register.esp, self.size)
-        yield from emit.mov(Register.esp, Register.acc)
+        yield emit.sub(Register.esp, self.size)
+        yield emit.mov(Register.esp, Register.acc)
         if self.ref == "ident" and self.pt is not None:
-            yield from emit.mov(ctx.lookup_variable(self.name, self), Register.aaa)
-            # go back to ctx here so we dont generate the var ref ourself
+            yield from self.pt.compile(ctx)  # expression goes to acc
+            yield emit.psh(Register.acc)
+            yield from self.load_lvalue(Register.eee, ctx)
+            yield emit.pop(Register.acc)
+            yield emit.mov([Register.eee], Register.acc)

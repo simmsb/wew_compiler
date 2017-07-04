@@ -1,7 +1,9 @@
 from .compiler_objects import LineReference
-
+from .emitters import emit
 
 class Literal(LineReference):
+
+    is_lvalue = False
 
     def __init__(self, ast):
         super().__init__(ast)
@@ -13,6 +15,13 @@ class Literal(LineReference):
 
 
 class Identifier(LineReference):
+
+    is_lvalue = True
+
+    def load_lvalue(self, register, ctx):
+        var = ctx.lookup_variable(self.name, self)
+        yield from var.load_lvalue()
+        # ezpz
 
     def __init__(self, ast):
         super().__init__(ast)
