@@ -28,7 +28,7 @@ def instruction_helper(instr, n_args):
         if len(args) != n_args:
             raise Exception(f"Instruction {instr} expects {n_args} but "
                             f"{len(args)} were given.")
-        return AbstractInstruction(instr, args)
+        yield from AbstractInstruction(instr, args).emit()
 
 #
 #  if int, dereference

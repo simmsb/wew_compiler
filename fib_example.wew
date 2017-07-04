@@ -1,0 +1,10 @@
+int fib(int n) {
+    int a := 1;
+    int b := a;
+    while (a < n) {
+        int temp := b + a;
+        a := b;
+        b := temp;
+    }
+    return b;
+}

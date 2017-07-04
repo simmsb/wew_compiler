@@ -104,6 +104,6 @@ class DeclaredVariable(Variable, Compilable):
         ctx.current_scope.declare_variable(ctx, self)
         yield from emit.sub(Register.esp, self.size)
         yield from emit.mov(Register.esp, Register.acc)
-        if self.ref == "ident":
+        if self.ref == "ident" and self.pt is not None:
             yield from emit.mov(ctx.lookup_variable(self.name, self), Register.aaa)
             # go back to ctx here so we dont generate the var ref ourself
